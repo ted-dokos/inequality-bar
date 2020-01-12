@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<!--
+ Copyright 2020 Google LLC
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<meta charset="utf-8">
+
+<style>
+  .percentile rect {
+    fill: black;
+  }
+
+  .percentile text {
+    fill: black;
+    font: 14px sans-serif;
+    font-weight: bold;
+  }
+  .axis text {
+    font: 10px sans-serif;
+  }
+
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+</style>
+
+<title>Percentile bar proof of concept</title>
+<script src="//d3js.org/d3.v5.min.js"></script>
+
+<body>
+  <button onClick="toggle()">
+    Toggle 1980/2014
+  </button>
+  <input type="text" id="foo">
+  <button onClick="setYear()">
+    SetYear</button>
+  <br/>
+
+  <svg class="chart"/>
+
+  <script src="util.js"></script>
+  <script src="data.js"></script>
+  <script src="percentile-bar.js"></script>
+
+</body>
