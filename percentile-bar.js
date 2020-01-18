@@ -18,7 +18,7 @@
  * @fileoverview Description of this file.
  */
 
-var selectedCountries = [/*'percentopia',*/ 'USA', 'France'];
+var selectedCountries = ['percentBar-0-90-99-99.9-100', 'USA', 'France'];
 var debug = true;
 
 var percentileColors = {
@@ -27,16 +27,19 @@ var percentileColors = {
   '99-99.9': 'darkorange',
   '99.9-100': '#cc4444',
 };
-var percentiles = [0, 90, 99, 99.9, 100];
+var percentiles = [0, 0.9, 0.99, 0.999, 1.0];
 
 var dataBase = {};
 // Data defined in data.js
+if (debug) {
+  console.log(data);
+}
 for (var year of Object.keys(data)) {
-  var intermediateData = [];
-  for (var country of Object.keys(data[year])) {
-    intermediateData.push({name: country, bins: data[year][country]});
-  }
-  dataBase[year] = makePercentiles(percentiles, intermediateData);
+  dataBase[year] = makePercentiles(percentiles, data[year]);
+}
+
+if (debug) {
+  console.log(dataBase);
 }
 
 // var dataBase = {
@@ -59,87 +62,120 @@ for (var year of Object.keys(data)) {
 var upNext = '2014';
 var displayData = dataBase['1980'];
 
-if (debug) {
-  console.log(displayData);
-}
-
 var chartWidth = 1000;
 var chartHeight = 600;
 var barHeight = 30;
-var barBuffer = 30;
+var barBuffer = 40;
 
 var x = d3.scaleLinear().range([chartWidth * 0.02, chartWidth * 0.98]).domain([
-  0, 100
+  0, 1.0
 ]);
 
 var percentileAxis = d3.axisBottom()
                          .scale(x)
     .tickValues(percentiles)
-    .tickFormat(d => { if (d < 100) { return d.toFixed(1); } else { return '100'; }});
+    .tickFormat(d => { if (d < 1.0) { return (d*100).toFixed(1); } else { return '100'; }});
 
 var chart =
     d3.select('.chart').attr('width', chartWidth).attr('height', chartHeight);
 
+var yShift = chartHeight * 0.10
+
 chart.append('g')
     .attr('class', 'axis')
     .attr('transform',
-          'translate(0, ' + (barHeight + chartHeight * 0.05).toString() + ')');
+          'translate(0, ' + (barHeight + yShift).toString() + ')');
 
-function display(data) {
-  var transformedData = [];
-  data.forEach(function (p) {
-    var toPush = [];
-    var percentileString = p.lower.toString() + '-' + p.upper.toString();
-    toPush.push(['percentopia', p.lower, p.upper, percentileString]);
-    selectedCountries.forEach(function (c) {
-      toPush.push([c, p.countries[c].lower, p.countries[c].upper,
-                   percentileString, p.countries[c].size]);
-    });
-    transformedData.push(toPush);
-  });
+function display(year, dataOneYear) {
+  chart.selectAll('text.year')
+      .data([year])
+      .join('text')
+      .attr('x', chartWidth/2)
+      .attr('y', yShift/2)
+      .attr('class', 'year')
+      .attr('dominant-baseline', 'middle')
+      .attr('text-anchor', 'middle')
+      .text(d => d);
 
-  var bars = chart.selectAll('g.percentile')
-               .data(transformedData)
-               .join('g')
-               .attr('class', 'percentile')
-               .attr(
-                   'transform',
-                   'translate(0, ' + (chartHeight * 0.05).toString() + ')');
+  var bars = chart.selectAll('g.bar')
+      .data(selectedCountries)
+      .join('g')
+      .attr('class', 'bar')
+      .attr('id', country => country)
+      .attr('transform',
+            (d, i) => { return 'translate(0, '
+                        + (yShift + i * (barHeight + barBuffer)).toString()
+                        + ')'});
 
   bars.selectAll('rect')
-      .data(function (d, i) { return d; /* d is transformedData[i] */ })
+      .data(function (country, i) {
+        if (country.startsWith('percentBar') ){
+          return [
+            { lower: '0',
+              upper: '90',
+              size: .9,
+              sizeLower: 0.0,
+              sizeUpper: 0.9,
+            },
+            { lower: '90',
+              upper: '99',
+              size: 0.09,
+              sizeLower: 0.9,
+              sizeUpper: 0.99,
+            },
+            { lower: '99',
+              upper: '99.9',
+              size: 0.009,
+              sizeLower: 0.99,
+              sizeUpper: 0.999,
+            },
+            { lower: '99.9',
+              upper: '100',
+              size: 0.001,
+              sizeLower: 0.999,
+              sizeUpper: 1.0,
+            },
+          ];
+        } else {
+          return dataOneYear[country];
+        }
+           })
       .join('rect')
       .attr(
           'x',
-          d => {
-            return x(d[1]);
+          percentileData => {
+            return x(percentileData['sizeLower']);
           })
-      .attr('y', (d, i) => i * (barHeight + barBuffer))
-      .style(
-          'fill',
-          d => {
-            console.log(d);
-            return percentileColors[d[3]];
-          })
+      .attr('y', 0)
+      .style('fill', pd => percentileColors[pd['lower'] + '-' + pd['upper']])
       .attr('height', barHeight)
-      .attr('width', d => {
-        return x(d[2]) - x(d[1]);
+      .attr('width', pd => {
+        return x(pd['sizeUpper'])  - x(pd['sizeLower']);
       });
 
-  bars.selectAll('text')
-      .data((d, i) => d)
+  bars.selectAll('text.barSize')
+      .data(country => country.startsWith('percentBar') ? [] : dataOneYear[country])
       .join('text')
-      .attr('x', d => (x(d[1]) + x(d[2])) / 2)
-      .attr('y', (d, i) => i * (barHeight + barBuffer) + barHeight/2)
+      .attr('class', 'barSize')
+      .attr('x', pd => (x(pd['sizeLower']) + x(pd['sizeUpper'])) / 2)
+      .attr('y', barHeight/2)
       .attr('dominant-baseline', 'middle')
       .attr('text-anchor', 'middle')
-      .text((d, i) => i > 0 ? d[4].toFixed(1) : '');
+      .text(pd => (pd['size'] * 100).toFixed(1));
+
+  bars.selectAll('text.countryName')
+      .data(country => [country])
+      .join('text')
+      .attr('class', 'countryName')
+      .attr('x', x(0))
+      .attr('y', -5)
+      .text(c => c);
 
   chart.selectAll('g.axis')
       .call(percentileAxis)
       .selectAll('g.tick')
       .each(function(d, i) {
-        if (d > 90.1) {
+        if (d > 0.901) {
           var extraHeight = 5;
           var xShift = (i + 1 - percentiles.length) * 25;
             //(i - 2) *
@@ -157,20 +193,20 @@ function display(data) {
 }
 
 function toggle() {
-  displayData = dataBase[upNext];
+  dataOneYear = dataBase[upNext];
+  display(upNext, dataOneYear);
   if (upNext === '2014') {
     upNext = '1980';
   } else {
     upNext = '2014';
   }
-  display(displayData);
 }
 
 function setYear() {
   var year = document.getElementById('foo').value;
   if (dataBase[year] != null) {
-    display(dataBase[year]);
+    display(year, dataBase[year]);
   }
 }
 
-display(displayData);
+display('1980', displayData);
