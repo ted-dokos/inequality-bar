@@ -16,24 +16,15 @@ from collections import defaultdict
 import csv
 import json
 
+
 def process_colunm_names(names):
   out = names[:]
-  assert(out[0] == 'Percentile')
-  assert(out[1] == 'Year')
-  for i,n in enumerate(out):
+  assert (out[0] == 'Percentile')
+  assert (out[1] == 'Year')
+  for i, n in enumerate(out):
     out[i] = n.split('\n')[-1]
   return out
 
-# def simplify_bins(bins, percentiles):
-#   orderedpercentiles = sorted(percentiles, key=lambda p: float(p.split('p')[1]))
-#   indexmap = dict()
-#   for i,p in enumerate(orderedpercentiles):
-#     indexmap[p] = i
-#
-#   out = [0 for b in bins]
-#   for b in bins:
-#     out[indexmap[b[0]]] = float(b[1])
-#   return out
 
 with open('wid-data.csv', newline='') as widdata:
   datareader = csv.reader(widdata, delimiter=';', quotechar='"')
@@ -48,9 +39,9 @@ with open('wid-data.csv', newline='') as widdata:
     percentile = row[0]
     percentiles.add(percentile)
     year = row[1]
-    for i,binsize in enumerate(row[2:], start=2):
+    for i, binsize in enumerate(row[2:], start=2):
       country = colnames[i]
-      databyyear[year][country].append( (percentile, binsize) )
+      databyyear[year][country].append((percentile, binsize))
 
   # 1. None-ify any trivial country-years.
   # 2. Repair country-years that have one missing entry (100 - rest)
@@ -58,33 +49,20 @@ with open('wid-data.csv', newline='') as widdata:
   for year in databyyear:
     countriesbyyear = databyyear[year]
     for country in countriesbyyear:
-      assert(len(countriesbyyear[country]) > 0)
+      assert (len(countriesbyyear[country]) > 0)
       if all([x[1] == '' for x in countriesbyyear[country]]):
         countriesbyyear[country] = None
       elif sum([x[1] == '' for x in countriesbyyear[country]]) == 1:
         otherstotal = 0.0
         missingindex = -1
-        for i,x in enumerate(countriesbyyear[country]):
+        for i, x in enumerate(countriesbyyear[country]):
           if x[1] == '':
             missingindex = i
           else:
             otherstotal += float(x[1])
-        countriesbyyear[country][missingindex] = (countriesbyyear[country][missingindex][0],
-                                                  1.0 - otherstotal)
+        countriesbyyear[country][missingindex] = (
+            countriesbyyear[country][missingindex][0], 1.0 - otherstotal)
       elif any([x[1] == '' for x in countriesbyyear[country]]):
         countriesbyyear[country] = None
-
-      # if countriesbyyear[country] is not None:
-      #   countriesbyyear[country] = simplify_bins(countriesbyyear[country], percentiles)
-
-  # dpcountry = 'USA'
-  # for year in databyyear:
-  #   print(year, end=': ')
-  #   if databyyear[year][dpcountry] is not None:
-  #     s = sum([float(x[1]) for x in databyyear[year][dpcountry]])
-  #     print(s, end=' ')
-  #     print(abs(1-s) < 0.005)
-  #   else:
-  #     print('')
 
 print(json.dumps(databyyear))

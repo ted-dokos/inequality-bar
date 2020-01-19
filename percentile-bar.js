@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-/**
- * @fileoverview Description of this file.
- */
-
 var selectedCountries = ['percentBar-0-90-99-99.9-100', 'USA', 'France'];
 var debug = true;
 
@@ -35,29 +31,12 @@ if (debug) {
   console.log(data);
 }
 for (var year of Object.keys(data)) {
-  dataBase[year] = makePercentiles(percentiles, data[year]);
+  dataBase[year] = makePercentiles(data[year]);
 }
 
 if (debug) {
   console.log(dataBase);
 }
-
-// var dataBase = {
-//   2014: makePercentiles(
-//       percentiles,
-//       [
-//         {name: 'USA', bins: [53.0, 26.8, 10.9, 9.3]},
-//         {name: 'France', bins: [67.4, 21.8, 7.1, 3.7]},
-//         {name: 'Sweden', bins: [71.9, 19.3, 5.8, 3.0]},
-//       ]),
-//   1980: makePercentiles(
-//       percentiles,
-//       [
-//         {name: 'USA', bins: [65.8, 23.6, 7.1, 3.6]},
-//         {name: 'France', bins: [69.4, 22.5, 5.6, 2.6]},
-//         {name: 'Sweden', bins: [77.8, 17.2, 3.8, 1.2]},
-//       ])
-// };
 
 var upNext = '2014';
 var displayData = dataBase['1980'];
@@ -71,10 +50,14 @@ var x = d3.scaleLinear().range([chartWidth * 0.02, chartWidth * 0.98]).domain([
   0, 1.0
 ]);
 
-var percentileAxis = d3.axisBottom()
-                         .scale(x)
-    .tickValues(percentiles)
-    .tickFormat(d => { if (d < 1.0) { return (d*100).toFixed(1); } else { return '100'; }});
+var percentileAxis =
+    d3.axisBottom().scale(x).tickValues(percentiles).tickFormat(d => {
+      if (d < 1.0) {
+        return (d * 100).toFixed(1);
+      } else {
+        return '100';
+      }
+    });
 
 var chart =
     d3.select('.chart').attr('width', chartWidth).attr('height', chartHeight);
@@ -83,63 +66,39 @@ var yShift = chartHeight * 0.10
 
 chart.append('g')
     .attr('class', 'axis')
-    .attr('transform',
-          'translate(0, ' + (barHeight + yShift).toString() + ')');
+    .attr('transform', 'translate(0, ' + (barHeight + yShift).toString() + ')');
 
 function display(year, dataOneYear) {
   chart.selectAll('text.year')
       .data([year])
       .join('text')
-      .attr('x', chartWidth/2)
-      .attr('y', yShift/2)
+      .attr('x', chartWidth / 2)
+      .attr('y', yShift / 2)
       .attr('class', 'year')
       .attr('dominant-baseline', 'middle')
       .attr('text-anchor', 'middle')
       .text(d => d);
 
-  var bars = chart.selectAll('g.bar')
-      .data(selectedCountries)
-      .join('g')
-      .attr('class', 'bar')
-      .attr('id', country => country)
-      .attr('transform',
-            (d, i) => { return 'translate(0, '
-                        + (yShift + i * (barHeight + barBuffer)).toString()
-                        + ')'});
+  var bars =
+      chart.selectAll('g.bar')
+          .data(selectedCountries)
+          .join('g')
+          .attr('class', 'bar')
+          .attr('id', country => country)
+          .attr(
+              'transform',
+              (d, i) => {return 'translate(0, ' +
+                         (yShift + i * (barHeight + barBuffer)).toString() +
+                         ')'});
 
   bars.selectAll('rect')
-      .data(function (country, i) {
-        if (country.startsWith('percentBar') ){
-          return [
-            { lower: '0',
-              upper: '90',
-              size: .9,
-              sizeLower: 0.0,
-              sizeUpper: 0.9,
-            },
-            { lower: '90',
-              upper: '99',
-              size: 0.09,
-              sizeLower: 0.9,
-              sizeUpper: 0.99,
-            },
-            { lower: '99',
-              upper: '99.9',
-              size: 0.009,
-              sizeLower: 0.99,
-              sizeUpper: 0.999,
-            },
-            { lower: '99.9',
-              upper: '100',
-              size: 0.001,
-              sizeLower: 0.999,
-              sizeUpper: 1.0,
-            },
-          ];
+      .data(function(country, i) {
+        if (country.startsWith('percentBar')) {
+          return getPercentilesForPercentBar(country);
         } else {
           return dataOneYear[country];
         }
-           })
+      })
       .join('rect')
       .attr(
           'x',
@@ -150,15 +109,17 @@ function display(year, dataOneYear) {
       .style('fill', pd => percentileColors[pd['lower'] + '-' + pd['upper']])
       .attr('height', barHeight)
       .attr('width', pd => {
-        return x(pd['sizeUpper'])  - x(pd['sizeLower']);
+        return x(pd['sizeUpper']) - x(pd['sizeLower']);
       });
 
   bars.selectAll('text.barSize')
-      .data(country => country.startsWith('percentBar') ? [] : dataOneYear[country])
+      .data(
+          country =>
+              country.startsWith('percentBar') ? [] : dataOneYear[country])
       .join('text')
       .attr('class', 'barSize')
       .attr('x', pd => (x(pd['sizeLower']) + x(pd['sizeUpper'])) / 2)
-      .attr('y', barHeight/2)
+      .attr('y', barHeight / 2)
       .attr('dominant-baseline', 'middle')
       .attr('text-anchor', 'middle')
       .text(pd => (pd['size'] * 100).toFixed(1));
@@ -178,13 +139,12 @@ function display(year, dataOneYear) {
         if (d > 0.901) {
           var extraHeight = 5;
           var xShift = (i + 1 - percentiles.length) * 25;
-            //(i - 2) *
-              //        25).toString();  // this kludge will fail hopelessly
-        // if I ever change the percentiles
+          //(i - 2) *
+          //        25).toString();  // this kludge will fail hopelessly
+          // if I ever change the percentiles
           var line = d3.select(this).select('line');
           var y2 = line.attr('y2');
-          line.attr('y2', (parseInt(y2) + extraHeight))
-              .attr('x2', xShift);
+          line.attr('y2', (parseInt(y2) + extraHeight)).attr('x2', xShift);
           d3.select(this).select('text').attr(
               'transform',
               'translate(' + xShift + ', ' + extraHeight.toString() + ')');
