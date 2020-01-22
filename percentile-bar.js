@@ -91,31 +91,49 @@ function display(year, dataOneYear) {
                          (yShift + i * (barHeight + barBuffer)).toString() +
                          ')'});
 
-  bars.selectAll('rect')
+
+  var rects = bars.selectAll('rect')
       .data(function(country, i) {
         if (country.startsWith('percentBar')) {
           return getPercentilesForPercentBar(country);
         } else {
-          return dataOneYear[country];
+          var noData = (!dataOneYear.hasOwnProperty(country) ||
+                            dataOneYear[country] === null);
+          return noData ? [null] : dataOneYear[country];
         }
       })
-      .join('rect')
-      .attr(
-          'x',
-          percentileData => {
-            return x(percentileData['sizeLower']);
-          })
+      .join('rect');
+
+  var hasData = function (percentileDataOrNull) {
+    return percentileDataOrNull !== null;
+  };
+
+  rects.filter(pd => !hasData(pd))
+      .attr('x', x(0.0))
+      .attr('y', 0)
+      .style('fill', 'white')
+      .style('stroke', 'black')
+      .attr('height', barHeight)
+      .attr('width', x(1.0) - x(0.0));
+
+  rects.filter(pd => hasData(pd))
+      .attr('x', percentileData => x(percentileData['sizeLower']))
       .attr('y', 0)
       .style('fill', pd => percentileColors[pd['lower'] + '-' + pd['upper']])
       .attr('height', barHeight)
-      .attr('width', pd => {
-        return x(pd['sizeUpper']) - x(pd['sizeLower']);
-      });
+      .attr('width', pd => x(pd['sizeUpper']) - x(pd['sizeLower']));
 
   bars.selectAll('text.barSize')
       .data(
-          country =>
-              country.startsWith('percentBar') ? [] : dataOneYear[country])
+          country => {
+            if (country.startsWith('percentBar')) {
+              return [];
+            } else {
+              var noData = (!dataOneYear.hasOwnProperty(country) ||
+                            dataOneYear[country] === null);
+              return noData ? [] : dataOneYear[country];
+            }
+          })
       .join('text')
       .attr('class', 'barSize')
       .attr('x', pd => (x(pd['sizeLower']) + x(pd['sizeUpper'])) / 2)
