@@ -145,8 +145,9 @@ function display(year, dataOneYear) {
   countries.selectAll('g.bar')
       .data(
           c => countryDataFn(c),
-          d => d['sizeLower'].toFixed(20) + d['sizeUpper'].toFixed(20) +
-              d['size'].toFixed(20))
+          pd => pd === null ? null :
+                              pd['sizeLower'].toFixed(20) +
+                  pd['sizeUpper'].toFixed(20) + pd['size'].toFixed(20))
       .join(enter => {
         let g = enter.append('g').attr('class', 'bar');
         g.append('rect');
