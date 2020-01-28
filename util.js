@@ -32,6 +32,7 @@
  *       size: size of the percentile's share in this country as a float,
  *       sizeLower: the lower bound of the share for plotting on a bar chart,
  *       sizeUpper: the upper bound of the share for plotting on a bar chart,
+ *       country: equal to countryName, used for filtering in the d3 process,
  *     },
  *     ... ],
  *   ...
@@ -86,6 +87,7 @@ function makePercentiles(countryList) {
         'size': size,
         'sizeLower': percentBounds[lower],
         'sizeUpper': percentBounds[upper],
+        'country': countryName,
       });
     });
     out[countryName] = countryOut;
@@ -101,6 +103,7 @@ function getPercentilesForPercentBar(percentileStr) {
       size: .9,
       sizeLower: 0.0,
       sizeUpper: 0.9,
+      country: percentileStr,
     },
     {
       lower: '90',
@@ -108,6 +111,7 @@ function getPercentilesForPercentBar(percentileStr) {
       size: 0.09,
       sizeLower: 0.9,
       sizeUpper: 0.99,
+      country: percentileStr,
     },
     {
       lower: '99',
@@ -115,6 +119,7 @@ function getPercentilesForPercentBar(percentileStr) {
       size: 0.009,
       sizeLower: 0.99,
       sizeUpper: 0.999,
+      country: percentileStr,
     },
     {
       lower: '99.9',
@@ -122,6 +127,7 @@ function getPercentilesForPercentBar(percentileStr) {
       size: 0.001,
       sizeLower: 0.999,
       sizeUpper: 1.0,
+      country: percentileStr,
     },
   ];
 }
