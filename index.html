@@ -48,8 +48,11 @@
 
 <title>Percentile bar proof of concept</title>
 <script src="//d3js.org/d3.v5.min.js"></script>
+<script src="util.js"></script>
+<script src="data.js"></script>
+<script src="percentile-bar.js"></script>
 
-<body>
+<body onload="main()">
   <button onClick="toggle()">
     Toggle 1980/2014
   </button>
@@ -57,11 +60,14 @@
   <button onClick="setYear()">
     SetYear</button>
   <br/>
+  <input type="range"
+         id="slider"
+         name="Year"
+         min="1915"
+         max="2014"
+         step="1"
+         style="width:400px">
+  <br/>
 
   <svg class="chart"/>
-
-  <script src="util.js"></script>
-  <script src="data.js"></script>
-  <script src="percentile-bar.js"></script>
-
 </body>

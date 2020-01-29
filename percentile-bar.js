@@ -59,14 +59,9 @@ var percentileAxis =
       }
     });
 
-var chart =
-    d3.select('.chart').attr('width', chartWidth).attr('height', chartHeight);
+var yShift = chartHeight * 0.10;
 
-var yShift = chartHeight * 0.10
-
-chart.append('g')
-    .attr('class', 'axis')
-    .attr('transform', 'translate(0, ' + (barHeight + yShift).toString() + ')');
+var chart;
 
 function display(year, dataOneYear) {
   chart.selectAll('text.year')
@@ -202,5 +197,22 @@ function setYear() {
   }
 }
 
-// Ersatz main.
-display('1980', displayData);
+function main() {
+  chart =
+      d3.select('.chart').attr('width', chartWidth).attr('height', chartHeight);
+  chart.append('g')
+      .attr('class', 'axis')
+      .attr(
+          'transform', 'translate(0, ' + (barHeight + yShift).toString() + ')');
+
+  display('1980', displayData);
+
+  var yearBox = document.getElementById('foo');
+  yearBox.value = '1980';
+  var slider = document.getElementById('slider');
+  slider.value = '1980';
+  slider.oninput = function() {
+    yearBox.value = this.value;
+    display(this.value, dataBase[this.value]);
+  };
+}
