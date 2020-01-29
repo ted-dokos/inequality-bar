@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var selectedCountries = ['percentBar-0-90-99-99.9-100', 'USA', 'France'];
+var selectedCountries = ['percentBar-0-90-99-99.9-100', 'USA', 'France', 'Sweden'];
 var debug = true;
 
 var percentileColors = {
