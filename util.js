@@ -131,3 +131,10 @@ function getPercentilesForPercentBar(percentileStr) {
     },
   ];
 }
+
+if ( typeof module !== 'undefined' && module.hasOwnProperty('exports') )
+{
+  module.exports = {
+    'getPercentilesForPercentBar': getPercentilesForPercentBar,
+  };
+}
