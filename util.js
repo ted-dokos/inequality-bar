@@ -113,41 +113,6 @@ function getPercentilesForPercentBar(percentileStr) {
     current_lower += size;
   }
   return out;
-
-  // return [
-  //   {
-  //     lower: '0',
-  //     upper: '90',
-  //     size: .9,
-  //     sizeLower: 0.0,
-  //     sizeUpper: 0.9,
-  //     country: percentileStr,
-  //   },
-  //   {
-  //     lower: '90',
-  //     upper: '99',
-  //     size: 0.09,
-  //     sizeLower: 0.9,
-  //     sizeUpper: 0.99,
-  //     country: percentileStr,
-  //   },
-  //   {
-  //     lower: '99',
-  //     upper: '99.9',
-  //     size: 0.009,
-  //     sizeLower: 0.99,
-  //     sizeUpper: 0.999,
-  //     country: percentileStr,
-  //   },
-  //   {
-  //     lower: '99.9',
-  //     upper: '100',
-  //     size: 0.001,
-  //     sizeLower: 0.999,
-  //     sizeUpper: 1.0,
-  //     country: percentileStr,
-  //   },
-  // ];
 }
 
 if ( typeof module !== 'undefined' && module.hasOwnProperty('exports') )
