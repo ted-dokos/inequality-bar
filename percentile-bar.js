@@ -41,14 +41,17 @@ if (debug) {
 var upNext = '2014';
 var displayData = dataBase['1980'];
 
-var chartWidth = 1000;
-var chartHeight = 600;
-var barHeight = 30;
-var barBuffer = 40;
+var chartSpec = {
+  chartWidth: 1000,
+  chartHeight: 1000,
+  barHeight: 30,
+  barBuffer: 40,
+};
 
-var x = d3.scaleLinear().range([chartWidth * 0.02, chartWidth * 0.98]).domain([
-  0, 1.0
-]);
+var x = d3.scaleLinear()
+    .range([chartSpec.chartWidth * 0.02,
+            chartSpec.chartWidth * 0.98])
+    .domain([0, 1.0]);
 
 var percentileAxis =
     d3.axisBottom().scale(x).tickValues(percentiles).tickFormat(d => {
@@ -59,15 +62,61 @@ var percentileAxis =
       }
     });
 
-var yShift = chartHeight * 0.10;
+var yShift = chartSpec.chartHeight * 0.10;
 
 var chart;
 
-function display(year, dataOneYear) {
+function percentBarEnterFn(enter) {
+  let g = enter.append('g').attr('class', 'bar');
+  g.append('rect');
+  g.append('text');
+
+  let hasData = function(percentileDataOrNull) {
+    return percentileDataOrNull !== null;
+  };
+
+  enter.selectAll('g.bar rect')
+      .attr(
+          'x',
+          percentileData => hasData(percentileData) ?
+            x(percentileData['sizeLower']) :
+            x(0.0))
+      .attr('y', 0)
+      .style(
+          'fill',
+          pd => hasData(pd) ?
+            percentileColors[pd['lower'] + '-' + pd['upper']] :
+            'white')
+      .style('stroke', pd => hasData(pd) ? '' : 'black')
+      .attr('height', chartSpec.barHeight)
+      .attr(
+          'width',
+          pd => hasData(pd) ? x(pd['sizeUpper']) - x(pd['sizeLower']) :
+            x(1.0) - x(0.0));
+  // Add text to each percentile bar, except for the axis reference.
+  enter.filter(pd => pd === null || !pd['country'].startsWith('percentBar'))
+      .selectAll('g.bar text')
+      .attr('class', 'barSize')
+      .attr(
+          'x',
+          pd => {
+            if (hasData(pd)) {
+              return (x(pd['sizeLower']) + x(pd['sizeUpper'])) / 2;
+            } else {
+              return (x(0.0) + x(1.0)) / 2;
+            }
+          })
+      .attr('y', chartSpec.barHeight / 2)
+      .attr('dominant-baseline', 'middle')
+      .attr('text-anchor', 'middle')
+      .text(pd => hasData(pd) ? (pd['size'] * 100).toFixed(1) : 'NO DATA');
+}
+
+function display(year, dataOneYear, selectedCountries, chartSpec) {
   chart.selectAll('text.year')
       .data([year])
       .join('text')
-      .attr('x', chartWidth / 2)
+      .attr('x', chartSpec.chartWidth / 2)
       .attr('y', yShift / 2)
       .attr('class', 'year')
       .attr('dominant-baseline', 'middle')
@@ -82,9 +131,11 @@ function display(year, dataOneYear) {
           .attr('id', country => country)
           .attr(
               'transform',
-              (d, i) => {return 'translate(0, ' +
-                         (yShift + i * (barHeight + barBuffer)).toString() +
-                         ')'});
+              (d, i) => {
+                return 'translate(0, ' +
+                    (yShift +
+                     i * (chartSpec.barHeight + chartSpec.barBuffer)).toString() +
+                    ')'});
 
   let countryDataFn = function(country, i) {
     if (country.startsWith('percentBar')) {
@@ -96,46 +147,6 @@ function display(year, dataOneYear) {
       return noData ? [null] : dataOneYear[country];
     }
   };
-  let hasData = function(percentileDataOrNull) {
-    return percentileDataOrNull !== null;
-  };
-  let updateFn = function(state) {
-    state.selectAll('g.bar rect')
-        .attr(
-            'x',
-            percentileData => hasData(percentileData) ?
-                x(percentileData['sizeLower']) :
-                x(0.0))
-        .attr('y', 0)
-        .style(
-            'fill',
-            pd => hasData(pd) ?
-                percentileColors[pd['lower'] + '-' + pd['upper']] :
-                'white')
-        .style('stroke', pd => hasData(pd) ? '' : 'black')
-        .attr('height', barHeight)
-        .attr(
-            'width',
-            pd => hasData(pd) ? x(pd['sizeUpper']) - x(pd['sizeLower']) :
-                                x(1.0) - x(0.0));
-    // Add text to each percentile bar, except for the axis reference.
-    state.filter(pd => pd === null || !pd['country'].startsWith('percentBar'))
-        .selectAll('g.bar text')
-        .attr('class', 'barSize')
-        .attr(
-            'x',
-            pd => {
-              if (hasData(pd)) {
-                return (x(pd['sizeLower']) + x(pd['sizeUpper'])) / 2;
-              } else {
-                return (x(0.0) + x(1.0)) / 2;
-              }
-            })
-        .attr('y', barHeight / 2)
-        .attr('dominant-baseline', 'middle')
-        .attr('text-anchor', 'middle')
-        .text(pd => hasData(pd) ? (pd['size'] * 100).toFixed(1) : 'NO DATA');
-  };
 
   countries.selectAll('g.bar')
       .data(
@@ -143,12 +154,7 @@ function display(year, dataOneYear) {
           pd => pd === null ? null :
                               pd['sizeLower'].toFixed(20) +
                   pd['sizeUpper'].toFixed(20) + pd['size'].toFixed(20))
-      .join(enter => {
-        let g = enter.append('g').attr('class', 'bar');
-        g.append('rect');
-        g.append('text');
-        updateFn(enter);
-      });
+      .join(percentBarEnterFn);
 
   // Add country names to the chart.
   countries.filter(c => !c.startsWith('percentBar'))
@@ -182,7 +188,8 @@ function display(year, dataOneYear) {
 }
 
 function toggle() {
-  display(upNext, dataBase[upNext]);
+  setYear(upNext)
+  display(upNext, dataBase[upNext], selectedCountries, chartSpec);
   if (upNext === '2014') {
     upNext = '1980';
   } else {
@@ -190,22 +197,27 @@ function toggle() {
   }
 }
 
-function setYear() {
-  let year = document.getElementById('foo').value;
+function setYear(y = undefined) {
+  let year = y === undefined ? document.getElementById('foo').value : y;
+  document.getElementById('foo').value = year;
   if (dataBase[year] != null) {
-    display(year, dataBase[year]);
+    display(year, dataBase[year], selectedCountries, chartSpec);
+    let slider = document.getElementById('slider');
+    slider.value = year;
   }
 }
 
 function main() {
   chart =
-      d3.select('.chart').attr('width', chartWidth).attr('height', chartHeight);
+      d3.select('.chart')
+      .attr('width', chartSpec.chartWidth)
+      .attr('height', chartSpec.chartHeight);
   chart.append('g')
       .attr('class', 'axis')
       .attr(
-          'transform', 'translate(0, ' + (barHeight + yShift).toString() + ')');
+          'transform', 'translate(0, ' + (chartSpec.barHeight + yShift).toString() + ')');
 
-  display('1980', displayData);
+  display('1980', displayData, selectedCountries, chartSpec);
 
   var yearBox = document.getElementById('foo');
   yearBox.value = '1980';
@@ -213,6 +225,6 @@ function main() {
   slider.value = '1980';
   slider.oninput = function() {
     yearBox.value = this.value;
-    display(this.value, dataBase[this.value]);
+    display(this.value, dataBase[this.value], selectedCountries, chartSpec);
   };
 }
