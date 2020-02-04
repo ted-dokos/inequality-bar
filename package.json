@@ -1,2 +1,8 @@
 {
-  "scripts": { "test": "jasmine" }}
+  "scripts": {
+    "test": "jasmine"
+  },
+  "dependencies": {
+    "d3": "^5.15.0"
+  }
+}
