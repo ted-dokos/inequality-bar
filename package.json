@@ -3,6 +3,7 @@
     "test": "jasmine"
   },
   "dependencies": {
-    "d3": "^5.15.0"
+    "d3": "^5.15.0",
+    "jsdom": "^16.1.0"
   }
 }

@@ -112,7 +112,7 @@ function percentBarEnterFn(enter) {
       .text(pd => hasData(pd) ? (pd['size'] * 100).toFixed(1) : 'NO DATA');
 }
 
-function display(year, dataOneYear, selectedCountries, chartSpec) {
+function display(year, dataOneYear, selectedCountries, chart, chartSpec) {
   chart.selectAll('text.year')
       .data([year])
       .join('text')
@@ -189,7 +189,7 @@ function display(year, dataOneYear, selectedCountries, chartSpec) {
 
 function toggle() {
   setYear(upNext)
-  display(upNext, dataBase[upNext], selectedCountries, chartSpec);
+  display(upNext, dataBase[upNext], selectedCountries, chart, chartSpec);
   if (upNext === '2014') {
     upNext = '1980';
   } else {
@@ -201,7 +201,7 @@ function setYear(y = undefined) {
   let year = y === undefined ? document.getElementById('foo').value : y;
   document.getElementById('foo').value = year;
   if (dataBase[year] != null) {
-    display(year, dataBase[year], selectedCountries, chartSpec);
+    display(year, dataBase[year], selectedCountries, chart, chartSpec);
     let slider = document.getElementById('slider');
     slider.value = year;
   }
@@ -217,7 +217,7 @@ function main() {
       .attr(
           'transform', 'translate(0, ' + (chartSpec.barHeight + yShift).toString() + ')');
 
-  display('1980', displayData, selectedCountries, chartSpec);
+  display('1980', displayData, selectedCountries, chart, chartSpec);
 
   var yearBox = document.getElementById('foo');
   yearBox.value = '1980';
@@ -225,6 +225,6 @@ function main() {
   slider.value = '1980';
   slider.oninput = function() {
     yearBox.value = this.value;
-    display(this.value, dataBase[this.value], selectedCountries, chartSpec);
+    display(this.value, dataBase[this.value], selectedCountries, chart, chartSpec);
   };
 }
