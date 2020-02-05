@@ -16,7 +16,7 @@
 var util = require('../util.js');
 
 var customMatchers = {
-  toEqualApproximately: function(util, customEqualityTesters) {
+  isObjectContainingApproximately: function(util, customEqualityTesters) {
     return {
       compare: function(actual, expected) {
         let result = { pass: true };
@@ -72,28 +72,28 @@ describe('Test getPercentilesForPercentBar', function() {
     let percentiles = util.getPercentilesForPercentBar(percentileStr);
     expect(percentiles.length).toBe(4);
     expect(percentiles.find(p => p.lower === '0' && p.upper === '90'))
-        .toEqualApproximately({ lower: '0',
+        .isObjectContainingApproximately({ lower: '0',
                                 upper: '90',
                                 size: 0.9,
                                 sizeLower: 0.0,
                                 sizeUpper: 0.9,
                                 country: percentileStr });
     expect(percentiles.find(p => p.lower === '90' && p.upper === '99'))
-        .toEqualApproximately({ lower: '90',
+        .isObjectContainingApproximately({ lower: '90',
                                 upper: '99',
                                 size: 0.09,
                                 sizeLower: 0.9,
                                 sizeUpper: 0.99,
                                 country: percentileStr });
     expect(percentiles.find(p => p.lower === '99' && p.upper === '99.9'))
-        .toEqualApproximately({ lower: '99',
+        .isObjectContainingApproximately({ lower: '99',
                                 upper: '99.9',
                                 size: 0.009,
                                 sizeLower: 0.99,
                                 sizeUpper: 0.999,
                                 country: percentileStr });
     expect(percentiles.find(p => p.lower === '99.9' && p.upper === '100'))
-        .toEqualApproximately({ lower: '99.9',
+        .isObjectContainingApproximately({ lower: '99.9',
                                 upper: '100',
                                 size: 0.001,
                                 sizeLower: 0.999,
@@ -106,14 +106,14 @@ describe('Test getPercentilesForPercentBar', function() {
     let percentiles = util.getPercentilesForPercentBar(percentileStr);
     expect(percentiles.length).toBe(2);
     expect(percentiles.find(p => p.lower === '0' && p.upper === '50'))
-        .toEqualApproximately({ lower: '0',
+        .isObjectContainingApproximately({ lower: '0',
                                 upper: '50',
                                 size: 0.5,
                                 sizeLower: 0.0,
                                 sizeUpper: 0.5,
                                 country: percentileStr });
     expect(percentiles.find(p => p.lower === '50' && p.upper === '100'))
-        .toEqualApproximately({ lower: '50',
+        .isObjectContainingApproximately({ lower: '50',
                                 upper: '100',
                                 size: 0.5,
                                 sizeLower: 0.5,
