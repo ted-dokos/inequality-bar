@@ -69,11 +69,11 @@ function percentBarEnterFn(enter) {
  * [null] if the country is not present in the data.
  * @country is simply a string representing the country.
  * @data is a dictionary of the form
- * { country_1: [ pd_1, ... ],
+ * { country_1: [ pd_{1,1}, pd_{1,2}, ... ],
  *   ...
  * }
- * where each pd_i is a percentile data object (as described in the output of
- * makePercentiles).
+ * where each pd_{i,j} is a percentile data object (as described in the output
+ * of makePercentiles).
  */
 function countryDataFn(country, data) {
   if (country.startsWith('percentBar')) {
