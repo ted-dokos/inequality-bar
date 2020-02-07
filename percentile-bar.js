@@ -91,7 +91,7 @@ function countryDataFn(country, data) {
  * for a percentile data object are its percentile band (determines color), left
  * side coordinate (sizeLower), right side coordinate (sizeUpper), and its size
  * (size) for text display. The latter is implicitly determined by sizeLower and
- * sizeUpper, two, so we key only on those two.
+ * sizeUpper, so we key only on those two.
  * @pd is either null, or a percentile data object (as described in the output of
  * makePercentiles).
  * @output is a key that uniquely determines pd's visual representation.
