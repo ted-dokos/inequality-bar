@@ -60,6 +60,39 @@ function percentBarEnterFn(enter) {
       .text(pd => hasData(pd) ? (pd['size'] * 100).toFixed(1) : 'NO DATA');
 }
 
+function countryDataFn(country, data) {
+  if (country.startsWith('percentBar')) {
+    return getPercentilesForPercentBar(country);
+  } else {
+    let noData =
+        (!data.hasOwnProperty(country) ||
+         data[country] === null || data[country].length === 0);
+    return noData ? [null] : data[country];
+  }
+}
+
+/**
+ * Return key data for a percentile data object pd. The important visual factors
+ * for a percentile data object are its left side coordinate (sizeLower), its
+ * right side coordinate (sizeUpper), and its size (size) for text display. The
+ * latter is implicitly determined by the former two, so we key only on
+ * sizeLower and sizeUpper, to a degree of accuracy beyond what a browser would
+ * reasonably require.
+ * pd should be null, or have the following format:
+ *   { lower: the lower percentile as a string,
+ *     upper: the upper percentile as a string,
+ *     size: size of the percentile's share in this country as a float,
+ *     sizeLower: the lower bound of the share for plotting on a bar chart,
+ *     sizeUpper: the upper bound of the share for plotting on a bar chart,
+ *     country: equal to countryName, used for filtering in the d3 process, }
+ */
+function percentileDataKeyFn(pd) {
+  if (pd === null) {
+    return null;
+  }
+  return pd['sizeLower'].toFixed(20) + '|' + pd['sizeUpper'].toFixed(20);
+}
+
 function display(year, dataOneYear, selectedCountries, chart, chartSpec) {
   chart.selectAll('text.year')
       .data([year])
@@ -85,23 +118,8 @@ function display(year, dataOneYear, selectedCountries, chart, chartSpec) {
                      i * (chartSpec.barHeight + chartSpec.barBuffer)).toString() +
                     ')'});
 
-  let countryDataFn = function(country, i) {
-    if (country.startsWith('percentBar')) {
-      return getPercentilesForPercentBar(country);
-    } else {
-      let noData =
-          (!dataOneYear.hasOwnProperty(country) ||
-           dataOneYear[country] === null || dataOneYear[country] === []);
-      return noData ? [null] : dataOneYear[country];
-    }
-  };
-
   countries.selectAll('g.bar')
-      .data(
-          c => countryDataFn(c),
-          pd => pd === null ? null :
-                              pd['sizeLower'].toFixed(20) +
-                  pd['sizeUpper'].toFixed(20) + pd['size'].toFixed(20))
+      .data(c => countryDataFn(c, dataOneYear), percentileDataKeyFn)
       .join(percentBarEnterFn);
 
   // Add country names to the chart.
@@ -133,4 +151,11 @@ function display(year, dataOneYear, selectedCountries, chart, chartSpec) {
               'translate(' + xShift + ', ' + extraHeight.toString() + ')');
         }
       });
+}
+
+if ( typeof module !== 'undefined' && module.hasOwnProperty('exports') )
+{
+  module.exports = {
+    'countryDataFn': countryDataFn,
+  };
 }

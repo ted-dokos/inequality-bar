@@ -13,26 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//var pb = require('../percentile-bar.js');
+var pb = require('../percentile-bar.js');
 var d3 = require("d3");
+
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
-//const { window } = new JSDOM(`...`);
-//const { document } = (new JSDOM(`...`)).window;
 const dom = new JSDOM(`<!DOCTYPE html><body><div class="test"></div></body>`);
 global.document = dom.window.document;
-//global.document = (new JSDOM(`<!DOCTYPE html><body></body>`)).window;
+
+describe('countryDataFn', function() {
+  it('returns [null] when the country is not in the data', function() {
+    expect(pb.countryDataFn('France', {})).toEqual([null]);
+  });
+
+  it('returns [null] when the country is trivially in the data',
+     function() {
+       expect(pb.countryDataFn('France', { 'France': null })).toEqual([null]);
+       expect(pb.countryDataFn('France', { 'France': [], })).toEqual([null]);
+     });
+
+  it('gets country data when present', function() {
+    let data = ['not', 'real', 'data', 'but', 'whatevs'];
+    expect(pb.countryDataFn('France', { 'France': data.slice() }))
+        .toEqual(data);
+  });
+});
+
+describe('percentileDataKeyFn', function() {
+  it(''
+});
 
 describe('The d3 module', function() {
   it('exists', function() {
     expect(d3).not.toBe(undefined);
   });
-  it('Can run selections', function() {
+  it('can run selections', function() {
     let empty = d3.selection()
     expect(empty).not.toBe(undefined);
     expect(empty).not.toBe(null);
   });
-  it('Can join data', function() {
+  it('can join data', function() {
     let test = d3.select('div.test');
     let testData = ['a', 'b', 'c'];
     test.selectAll('div').data(testData).join('div').html(d => d);
@@ -44,63 +64,3 @@ describe('The d3 module', function() {
 
   });
 });
-
-// describe('Test getPercentilesForPercentBar', function() {
-//   beforeEach(function() {
-//     jasmine.addMatchers(customMatchers);
-//   });
-
-//   it('returns the right buckets for 0-90-99-99.9-100', function() {
-//     let percentileStr = 'percentBar-0-90-99-99.9-100';
-//     let percentiles = util.getPercentilesForPercentBar(percentileStr);
-//     expect(percentiles.length).toBe(4);
-//     expect(percentiles.find(p => p.lower === '0' && p.upper === '90'))
-//         .toEqualApproximately({ lower: '0',
-//                                 upper: '90',
-//                                 size: 0.9,
-//                                 sizeLower: 0.0,
-//                                 sizeUpper: 0.9,
-//                                 country: percentileStr });
-//     expect(percentiles.find(p => p.lower === '90' && p.upper === '99'))
-//         .toEqualApproximately({ lower: '90',
-//                                 upper: '99',
-//                                 size: 0.09,
-//                                 sizeLower: 0.9,
-//                                 sizeUpper: 0.99,
-//                                 country: percentileStr });
-//     expect(percentiles.find(p => p.lower === '99' && p.upper === '99.9'))
-//         .toEqualApproximately({ lower: '99',
-//                                 upper: '99.9',
-//                                 size: 0.009,
-//                                 sizeLower: 0.99,
-//                                 sizeUpper: 0.999,
-//                                 country: percentileStr });
-//     expect(percentiles.find(p => p.lower === '99.9' && p.upper === '100'))
-//         .toEqualApproximately({ lower: '99.9',
-//                                 upper: '100',
-//                                 size: 0.001,
-//                                 sizeLower: 0.999,
-//                                 sizeUpper: 1.0,
-//                                 country: percentileStr });
-//   });
-
-//   it('returns the right buckets for 0-50-100', function() {
-//     let percentileStr = 'percentBar-0-50-100';
-//     let percentiles = util.getPercentilesForPercentBar(percentileStr);
-//     expect(percentiles.length).toBe(2);
-//     expect(percentiles.find(p => p.lower === '0' && p.upper === '50'))
-//         .toEqualApproximately({ lower: '0',
-//                                 upper: '50',
-//                                 size: 0.5,
-//                                 sizeLower: 0.0,
-//                                 sizeUpper: 0.5,
-//                                 country: percentileStr });
-//     expect(percentiles.find(p => p.lower === '50' && p.upper === '100'))
-//         .toEqualApproximately({ lower: '50',
-//                                 upper: '100',
-//                                 size: 0.5,
-//                                 sizeLower: 0.5,
-//                                 sizeUpper: 1.0,
-//                                 country: percentileStr });
-//   });
-// });
