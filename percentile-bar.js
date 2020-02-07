@@ -60,6 +60,17 @@ function percentBarEnterFn(enter) {
       .text(pd => hasData(pd) ? (pd['size'] * 100).toFixed(1) : 'NO DATA');
 }
 
+/**
+ * Retrieve an array of percentile data objects for a specified country, or
+ * [null] if the country is not present in the data.
+ * @country is simply a string representing the country.
+ * @data is a dictionary of the form
+ * { country_1: [ pd_1, ... ],
+ *   ...
+ * }
+ * where each pd_i is a percentile data object (as described in the output of
+ * makePercentiles).
+ */
 function countryDataFn(country, data) {
   if (country.startsWith('percentBar')) {
     return getPercentilesForPercentBar(country);
@@ -78,13 +89,9 @@ function countryDataFn(country, data) {
  * latter is implicitly determined by the former two, so we key only on
  * sizeLower and sizeUpper, to a degree of accuracy beyond what a browser would
  * reasonably require.
- * pd should be null, or have the following format:
- *   { lower: the lower percentile as a string,
- *     upper: the upper percentile as a string,
- *     size: size of the percentile's share in this country as a float,
- *     sizeLower: the lower bound of the share for plotting on a bar chart,
- *     sizeUpper: the upper bound of the share for plotting on a bar chart,
- *     country: equal to countryName, used for filtering in the d3 process, }
+ * @pd is either null, or a percentile data object (as described in the output of
+ * makePercentiles).
+ * @output is a key that uniquely determines pd's visual representation.
  */
 function percentileDataKeyFn(pd) {
   if (pd === null) {

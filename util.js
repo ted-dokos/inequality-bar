@@ -25,7 +25,7 @@
  * }
  * where L and U are the lower and upper bounds on the percentile, as strings
  * (e.g. '0' and '90').
- * The output has the following format:
+ * @output has the following format:
  * { countryName: [
  *     { lower: the lower percentile as a string,
  *       upper: the upper percentile as a string,
@@ -95,6 +95,13 @@ function makePercentiles(countryList) {
   return out;
 }
 
+/**
+ * Create percentile data objects whose sizes are exactly equal to the
+ * difference between the upper and lower percentiles.
+ * @percentileStr has the format 'percentBar-0-x_2-...-x_n-100', where x_i is
+ * strictly increasing.
+ * @output has the same output format as makePercentiles.
+ */
 function getPercentilesForPercentBar(percentileStr) {
   let split = percentileStr.split('-');
   out = [];
