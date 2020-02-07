@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
+/**
+ * Add visual elements for entering percentile data objects: colored rectangles
+ * of the corresponding size, and the size itself as text (only for countries,
+ * not for percent bars).
+ * @enter is a d3 selection of <g class="bar"> elements, each bound to a
+ * percentile data object (as described in the output of makePercentiles).
+ */
 function percentBarEnterFn(enter) {
-  let g = enter.append('g').attr('class', 'bar');
-  g.append('rect');
-  g.append('text');
-
   let hasData = function(percentileDataOrNull) {
     return percentileDataOrNull !== null;
   };
 
-  enter.selectAll('g.bar rect')
-      .attr(
+  let g = enter.append('g').attr('class', 'bar');
+  g.append('rect')
+  .attr(
           'x',
           percentileData => hasData(percentileData) ?
             x(percentileData['sizeLower']) :
@@ -42,8 +46,8 @@ function percentBarEnterFn(enter) {
           pd => hasData(pd) ? x(pd['sizeUpper']) - x(pd['sizeLower']) :
             x(1.0) - x(0.0));
   // Add text to each percentile bar, except for the axis reference.
-  enter.filter(pd => pd === null || !pd['country'].startsWith('percentBar'))
-      .selectAll('g.bar text')
+  g.append('text')
+      .filter(pd => pd === null || !pd['country'].startsWith('percentBar'))
       .attr('class', 'barSize')
       .attr(
           'x',
