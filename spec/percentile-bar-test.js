@@ -40,7 +40,40 @@ describe('countryDataFn', function() {
 });
 
 describe('percentileDataKeyFn', function() {
-  it(''
+  it('is idempotent', function() {
+    let pd = { lower: '90', upper: '100',
+               sizeLower: 0.8, sizeUpper: 1.0,
+               size: (1.0 - 0.8),
+               country: 'unimportant' };
+    expect(pb.percentileDataKeyFn(pd)).toEqual(pb.percentileDataKeyFn(pd));
+  });
+
+  it('returns different keys when percentile bands are different',
+     function() {
+       let pd1 = { lower: '90', upper: '100',
+                   sizeLower: 0.8, sizeUpper: 1.0,
+                   size: (1.0 - 0.8),
+                   country: 'unimportant' };
+       let pd2 = { lower: '95', upper: '100',
+                   sizeLower: 0.8, sizeUpper: 1.0,
+                   size: (1.0 - 0.8),
+                   country: 'unimportant' };
+       expect(pb.percentileDataKeyFn(pd1))
+           .not.toEqual(pb.percentileDataKeyFn(pd2));
+     });
+
+  it('returns different keys when sizes are different', function() {
+    let pd1 = { lower: '90', upper: '100',
+                sizeLower: 0.8, sizeUpper: 1.0,
+                size: (1.0 - 0.8),
+                country: 'unimportant' };
+    let pd2 = { lower: '90', upper: '100',
+                sizeLower: 0.7, sizeUpper: 1.0,
+                size: (1.0 - 0.7),
+                country: 'unimportant' };
+    expect(pb.percentileDataKeyFn(pd1))
+        .not.toEqual(pb.percentileDataKeyFn(pd2));
+  });
 });
 
 describe('The d3 module', function() {

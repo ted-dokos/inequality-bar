@@ -88,11 +88,10 @@ function countryDataFn(country, data) {
 
 /**
  * Return key data for a percentile data object pd. The important visual factors
- * for a percentile data object are its left side coordinate (sizeLower), its
- * right side coordinate (sizeUpper), and its size (size) for text display. The
- * latter is implicitly determined by the former two, so we key only on
- * sizeLower and sizeUpper, to a degree of accuracy beyond what a browser would
- * reasonably require.
+ * for a percentile data object are its percentile band (determines color), left
+ * side coordinate (sizeLower), right side coordinate (sizeUpper), and its size
+ * (size) for text display. The latter is implicitly determined by sizeLower and
+ * sizeUpper, two, so we key only on those two.
  * @pd is either null, or a percentile data object (as described in the output of
  * makePercentiles).
  * @output is a key that uniquely determines pd's visual representation.
@@ -101,7 +100,11 @@ function percentileDataKeyFn(pd) {
   if (pd === null) {
     return null;
   }
-  return pd['sizeLower'].toFixed(20) + '|' + pd['sizeUpper'].toFixed(20);
+  return [pd['lower'], // lower and upper determine color.
+          pd['upper'],
+          pd['sizeLower'].toFixed(20),
+          pd['sizeUpper'].toFixed(20)]
+      .join('|');
 }
 
 function display(year, dataOneYear, selectedCountries, chart, chartSpec) {
@@ -168,5 +171,6 @@ if ( typeof module !== 'undefined' && module.hasOwnProperty('exports') )
 {
   module.exports = {
     'countryDataFn': countryDataFn,
+    'percentileDataKeyFn': percentileDataKeyFn,
   };
 }
