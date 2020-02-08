@@ -18,8 +18,6 @@ var d3 = require("d3");
 
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
-const dom = new JSDOM(`<!DOCTYPE html><body><div class="test"></div></body>`);
-global.document = dom.window.document;
 
 describe('countryDataFn', function() {
   it('returns [null] when the country is not in the data', function() {
@@ -43,9 +41,14 @@ describe('percentBarEnterFn', function() {
   let x = d3.scaleLinear()
       .range([0, 1000])
       .domain([0, 1.0]);
-
+  let dom = null;
+  beforeEach(function() {
+    dom = new JSDOM(`<!DOCTYPE html><body><svg class="test"></svg></body>`);
+    global.document = dom.window.document;
+  });
   afterEach(function() {
-    d3.select('div.test').html('');
+    dom = null;
+    global.document = null;
   });
 
   it('creates elements for the entering percentile data', function() {
@@ -56,34 +59,34 @@ describe('percentBarEnterFn', function() {
                    sizeLower: 0.3, sizeUpper: 1.0, size: 0.7,
                    country: 'unimportant'},
                    ];
-    let enter = d3.select('div.test')
+    let enter = d3.select('svg.test')
         .selectAll('g.bar')
         .data(testData, pb.percentileDataKeyFn)
         .enter();
 
-    let nodesBefore = d3.selectAll('div.test g.bar').nodes();
+    let nodesBefore = d3.selectAll('svg.test g.bar').nodes();
     expect(nodesBefore.length).toBe(0);
 
     pb.percentBarEnterFn(enter, x, 123);
 
-    let nodesAfter = d3.selectAll('div.test g.bar').nodes();
+    let nodesAfter = d3.selectAll('svg.test g.bar').nodes();
     expect(nodesAfter.length).toBe(2);
-    expect(d3.select('div.test').selectAll('g.bar').data()).toEqual(testData);
+    expect(d3.select('svg.test').selectAll('g.bar').data()).toEqual(testData);
   });
 
   it('creates a "no data" element when the entering data = [null]', function() {
     let testData = [null];
-    let enter = d3.select('div.test')
+    let enter = d3.select('svg.test')
         .selectAll('g.bar')
         .data(testData, pb.percentileDataKeyFn)
         .enter();
 
-    let nodesBefore = d3.selectAll('div.test g.bar').nodes();
+    let nodesBefore = d3.selectAll('svg.test g.bar').nodes();
     expect(nodesBefore.length).toBe(0);
 
     pb.percentBarEnterFn(enter, x, 123);
 
-    let after = d3.selectAll('div.test g.bar');
+    let after = d3.selectAll('svg.test g.bar');
     expect(after.nodes().length).toBe(1);
     expect(after.select('text').text()).toEqual('NO DATA');
   });
@@ -97,12 +100,12 @@ describe('percentBarEnterFn', function() {
                           country: 'unimportant'},
                       ];
 
-    d3.select('div.test')
+    d3.select('svg.test')
         .selectAll('g.bar')
         .data(initialData, pb.percentileDataKeyFn)
         .join(enter => pb.percentBarEnterFn(enter, x, 123));
 
-    expect(d3.select('div.test').selectAll('g.bar').data())
+    expect(d3.select('svg.test').selectAll('g.bar').data())
         .toEqual(initialData);
 
     let newData = [ { lower: '0', upper: '50',
@@ -113,7 +116,7 @@ describe('percentBarEnterFn', function() {
                           country: 'unimportant'},
                       ];
 
-    let update = d3.select('div.test')
+    let update = d3.select('svg.test')
         .selectAll('g.bar')
         .data(newData, pb.percentileDataKeyFn);
 
@@ -124,7 +127,7 @@ describe('percentBarEnterFn', function() {
 
     update.join(enter => pb.percentBarEnterFn(enter, x, 123));
 
-    expect(d3.select('div.test').selectAll('g.bar').data()).toEqual(newData);
+    expect(d3.select('svg.test').selectAll('g.bar').data()).toEqual(newData);
   });
 });
 
@@ -166,8 +169,14 @@ describe('percentileDataKeyFn', function() {
 });
 
 describe('The d3 module', function() {
+  let dom = null;
+  beforeEach(function() {
+    dom = new JSDOM(`<!DOCTYPE html><body><div class="test"></div></body>`);
+    global.document = dom.window.document;
+  });
   afterEach(function() {
-    d3.select('div.test').html('');
+    dom = null;
+    global.document = null;
   });
 
   it('exists', function() {
