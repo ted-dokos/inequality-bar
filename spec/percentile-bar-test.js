@@ -39,6 +39,33 @@ describe('countryDataFn', function() {
   });
 });
 
+describe('percentBarEnterFn', function() {
+  it('creates visual data for the entering percentile data', function() {
+    let testData = [ { lower: '0', upper: '50',
+                   sizeLower: 0.0, sizeUpper: 0.3, size: 0.3,
+                   country: 'unimportant'},
+                 { lower: '50', upper: '100',
+                   sizeLower: 0.3, sizeUpper: 1.0, size: 0.7,
+                   country: 'unimportant'},
+                   ];
+    let x = d3.scaleLinear()
+        .range([0, 1000])
+        .domain([0, 1.0]);
+    let enter = d3.select('div.test')
+        .selectAll('g.bar')
+        .data(testData, pb.percentileDataKeyFn)
+        .enter();
+
+    let nodesBefore = d3.selectAll('div.test g.bar').nodes();
+    expect(nodesBefore.length).toBe(0);
+
+    pb.percentBarEnterFn(enter, x, 123);
+
+    let nodesAfter = d3.selectAll('div.test g.bar').nodes();
+    expect(nodesAfter.length).toBe(2);
+  });
+});
+
 describe('percentileDataKeyFn', function() {
   it('is idempotent', function() {
     let pd = { lower: '90', upper: '100',

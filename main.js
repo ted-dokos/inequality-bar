@@ -17,12 +17,6 @@
 var selectedCountries = ['percentBar-0-90-99-99.9-100', 'USA', 'France', 'Sweden'];
 var debug = true;
 
-var percentileColors = {
-  '0-90': 'lightgreen',
-  '90-99': '#5599dd',
-  '99-99.9': 'darkorange',
-  '99.9-100': '#cc4444',
-};
 var percentiles = [0, 0.9, 0.99, 0.999, 1.0];
 
 var dataBase = {};
@@ -47,20 +41,6 @@ var chartSpec = {
   barHeight: 30,
   barBuffer: 40,
 };
-
-var x = d3.scaleLinear()
-    .range([chartSpec.chartWidth * 0.02,
-            chartSpec.chartWidth * 0.98])
-    .domain([0, 1.0]);
-
-var percentileAxis =
-    d3.axisBottom().scale(x).tickValues(percentiles).tickFormat(d => {
-      if (d < 1.0) {
-        return (d * 100).toFixed(1);
-      } else {
-        return '100';
-      }
-    });
 
 var yShift = chartSpec.chartHeight * 0.10;
 

@@ -20,10 +20,19 @@
  * not for percent bars).
  * @enter is a d3 selection of <g class="bar"> elements, each bound to a
  * percentile data object (as described in the output of makePercentiles).
+ * @x is a d3 scale object, used to determine the positions of elements.
+ * @barHeight is a number that determines the height of the displayed bars.
  */
-function percentBarEnterFn(enter) {
+function percentBarEnterFn(enter, x, barHeight) {
   let hasData = function(percentileDataOrNull) {
     return percentileDataOrNull !== null;
+  };
+
+  let percentileColors = {
+    '0-90': 'lightgreen',
+    '90-99': '#5599dd',
+    '99-99.9': 'darkorange',
+    '99.9-100': '#cc4444',
   };
 
   let g = enter.append('g').attr('class', 'bar');
@@ -40,7 +49,7 @@ function percentBarEnterFn(enter) {
             percentileColors[pd['lower'] + '-' + pd['upper']] :
             'white')
       .style('stroke', pd => hasData(pd) ? '' : 'black')
-      .attr('height', chartSpec.barHeight)
+      .attr('height', barHeight)
       .attr(
           'width',
           pd => hasData(pd) ? x(pd['sizeUpper']) - x(pd['sizeLower']) :
@@ -58,7 +67,7 @@ function percentBarEnterFn(enter) {
               return (x(0.0) + x(1.0)) / 2;
             }
           })
-      .attr('y', chartSpec.barHeight / 2)
+      .attr('y', barHeight / 2)
       .attr('dominant-baseline', 'middle')
       .attr('text-anchor', 'middle')
       .text(pd => hasData(pd) ? (pd['size'] * 100).toFixed(1) : 'NO DATA');
@@ -108,6 +117,20 @@ function percentileDataKeyFn(pd) {
 }
 
 function display(year, dataOneYear, selectedCountries, chart, chartSpec) {
+  let x = d3.scaleLinear()
+      .range([chartSpec.chartWidth * 0.02,
+              chartSpec.chartWidth * 0.98])
+      .domain([0, 1.0]);
+
+  let percentileAxis =
+      d3.axisBottom().scale(x).tickValues(percentiles).tickFormat(d => {
+        if (d < 1.0) {
+          return (d * 100).toFixed(1);
+        } else {
+          return '100';
+        }
+      });
+
   chart.selectAll('text.year')
       .data([year])
       .join('text')
@@ -134,7 +157,7 @@ function display(year, dataOneYear, selectedCountries, chart, chartSpec) {
 
   countries.selectAll('g.bar')
       .data(c => countryDataFn(c, dataOneYear), percentileDataKeyFn)
-      .join(percentBarEnterFn);
+      .join(enter => percentBarEnterFn(enter, x, chartSpec.barHeight));
 
   // Add country names to the chart.
   countries.filter(c => !c.startsWith('percentBar'))
@@ -171,6 +194,7 @@ if ( typeof module !== 'undefined' && module.hasOwnProperty('exports') )
 {
   module.exports = {
     'countryDataFn': countryDataFn,
+    'percentBarEnterFn': percentBarEnterFn,
     'percentileDataKeyFn': percentileDataKeyFn,
   };
 }
