@@ -40,7 +40,7 @@ describe('countryDataFn', function() {
 });
 
 describe('percentBarEnterFn', function() {
-  it('creates visual data for the entering percentile data', function() {
+  it('creates elements for the entering percentile data', function() {
     let testData = [ { lower: '0', upper: '50',
                    sizeLower: 0.0, sizeUpper: 0.3, size: 0.3,
                    country: 'unimportant'},
@@ -63,6 +63,14 @@ describe('percentBarEnterFn', function() {
 
     let nodesAfter = d3.selectAll('div.test g.bar').nodes();
     expect(nodesAfter.length).toBe(2);
+  });
+
+  it('creates a "no data" element when the entering data = [null]', function() {
+
+  });
+
+  it('creates new elements when passed new data', function() {
+
   });
 });
 
