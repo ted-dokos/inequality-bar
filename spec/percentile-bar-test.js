@@ -40,6 +40,14 @@ describe('countryDataFn', function() {
 });
 
 describe('percentBarEnterFn', function() {
+  let x = d3.scaleLinear()
+      .range([0, 1000])
+      .domain([0, 1.0]);
+
+  afterEach(function() {
+    d3.select('div.test').html('');
+  });
+
   it('creates elements for the entering percentile data', function() {
     let testData = [ { lower: '0', upper: '50',
                    sizeLower: 0.0, sizeUpper: 0.3, size: 0.3,
@@ -48,9 +56,6 @@ describe('percentBarEnterFn', function() {
                    sizeLower: 0.3, sizeUpper: 1.0, size: 0.7,
                    country: 'unimportant'},
                    ];
-    let x = d3.scaleLinear()
-        .range([0, 1000])
-        .domain([0, 1.0]);
     let enter = d3.select('div.test')
         .selectAll('g.bar')
         .data(testData, pb.percentileDataKeyFn)
@@ -66,11 +71,58 @@ describe('percentBarEnterFn', function() {
   });
 
   it('creates a "no data" element when the entering data = [null]', function() {
+    let testData = [null];
+    let enter = d3.select('div.test')
+        .selectAll('g.bar')
+        .data(testData, pb.percentileDataKeyFn)
+        .enter();
 
+    let nodesBefore = d3.selectAll('div.test g.bar').nodes();
+    expect(nodesBefore.length).toBe(0);
+
+    pb.percentBarEnterFn(enter, x, 123);
+
+    let after = d3.selectAll('div.test g.bar');
+    expect(after.nodes().length).toBe(1);
+    expect(after.select('text').text()).toEqual('NO DATA');
   });
 
   it('creates new elements when passed new data', function() {
+    let initialData = [ { lower: '0', upper: '50',
+                          sizeLower: 0.0, sizeUpper: 0.3, size: 0.3,
+                          country: 'unimportant'},
+                        { lower: '50', upper: '100',
+                          sizeLower: 0.3, sizeUpper: 1.0, size: 0.7,
+                          country: 'unimportant'},
+                      ];
 
+    d3.select('div.test')
+        .selectAll('g.bar')
+        .data(initialData, pb.percentileDataKeyFn)
+        .join(enter => pb.percentBarEnterFn(enter, x, 123));
+
+    expect(d3.select('div.test').selectAll('g.bar').data()).toEqual(initialData);
+
+    let newData = [ { lower: '0', upper: '50',
+                          sizeLower: 0.0, sizeUpper: 0.5, size: 0.5,
+                          country: 'unimportant'},
+                        { lower: '50', upper: '100',
+                          sizeLower: 0.5, sizeUpper: 1.0, size: 0.5,
+                          country: 'unimportant'},
+                      ];
+
+    let update = d3.select('div.test')
+        .selectAll('g.bar')
+        .data(newData, pb.percentileDataKeyFn);
+
+    expect(update.exit().nodes().length).toBe(2);
+    expect(update.exit().data()).toEqual(initialData);
+    expect(update.enter().nodes().length).toBe(2);
+    expect(update.enter().data()).toEqual(newData);
+
+    update.join(enter => pb.percentBarEnterFn(enter, x, 123));
+
+    expect(d3.select('div.test').selectAll('g.bar').data()).toEqual(newData);
   });
 });
 
@@ -112,6 +164,10 @@ describe('percentileDataKeyFn', function() {
 });
 
 describe('The d3 module', function() {
+  afterEach(function() {
+    d3.select('div.test').html('');
+  });
+
   it('exists', function() {
     expect(d3).not.toBe(undefined);
   });
@@ -124,7 +180,6 @@ describe('The d3 module', function() {
     let test = d3.select('div.test');
     let testData = ['a', 'b', 'c'];
     test.selectAll('div').data(testData).join('div').html(d => d);
-
     let res = d3.selectAll('div.test div').nodes();
     expect(res.length).toBe(testData.length);
     res.forEach(
