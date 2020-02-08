@@ -5,5 +5,12 @@
   "dependencies": {
     "d3": "^5.15.0",
     "jsdom": "^16.1.0"
+  },
+  "devDependencies": {
+    "jasmine": "^3.5.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ted-dokos/inequality-bar.git"
   }
 }
