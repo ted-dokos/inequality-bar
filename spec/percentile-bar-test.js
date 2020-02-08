@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var pb = require('../percentile-bar.js');
+var pb = require('../src/percentile-bar.js');
 var d3 = require("d3");
 
 const jsdom = require("jsdom");
