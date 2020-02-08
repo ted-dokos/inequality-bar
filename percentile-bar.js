@@ -116,7 +116,7 @@ function percentileDataKeyFn(pd) {
       .join('|');
 }
 
-function display(year, dataOneYear, selectedCountries, chart, chartSpec) {
+function display(year, inequalityType, dataOneYear, selectedCountries, chart, chartSpec) {
   let x = d3.scaleLinear()
       .range([chartSpec.chartWidth * 0.02,
               chartSpec.chartWidth * 0.98])
@@ -139,7 +139,7 @@ function display(year, dataOneYear, selectedCountries, chart, chartSpec) {
       .attr('class', 'year')
       .attr('dominant-baseline', 'middle')
       .attr('text-anchor', 'middle')
-      .text(d => d);
+      .text(d => inequalityType + ' inequality in ' + d);
 
   let countries =
       chart.selectAll('g.country')

@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-var selectedCountries = ['percentBar-0-90-99-99.9-100', 'USA', 'France', 'Sweden'];
+var selectedCountries = ['percentBar-0-90-99-99.9-100',
+                         'USA',
+                         'France',
+                         'Sweden',];
 var debug = true;
 
 var percentiles = [0, 0.9, 0.99, 0.999, 1.0];
@@ -46,9 +49,12 @@ var yShift = chartSpec.chartHeight * 0.10;
 
 var chart;
 
+var inequalityType = 'Income';
+
 function toggle() {
   setYear(upNext)
-  display(upNext, dataBase[upNext], selectedCountries, chart, chartSpec);
+  display(upNext, inequalityType, dataBase[upNext], selectedCountries, chart,
+          chartSpec);
   if (upNext === '2014') {
     upNext = '1980';
   } else {
@@ -60,7 +66,8 @@ function setYear(y = undefined) {
   let year = y === undefined ? document.getElementById('foo').value : y;
   document.getElementById('foo').value = year;
   if (dataBase[year] != null) {
-    display(year, dataBase[year], selectedCountries, chart, chartSpec);
+    display(year, inequalityType, dataBase[year], selectedCountries, chart,
+            chartSpec);
     let slider = document.getElementById('slider');
     slider.value = year;
   }
@@ -73,10 +80,11 @@ function main() {
       .attr('height', chartSpec.chartHeight);
   chart.append('g')
       .attr('class', 'axis')
-      .attr(
-          'transform', 'translate(0, ' + (chartSpec.barHeight + yShift).toString() + ')');
+      .attr('transform',
+            'translate(0, ' + (chartSpec.barHeight + yShift).toString() + ')');
 
-  display('1980', displayData, selectedCountries, chart, chartSpec);
+  display('1980', inequalityType, displayData, selectedCountries, chart,
+          chartSpec);
 
   var yearBox = document.getElementById('foo');
   yearBox.value = '1980';
@@ -84,6 +92,7 @@ function main() {
   slider.value = '1980';
   slider.oninput = function() {
     yearBox.value = this.value;
-    display(this.value, dataBase[this.value], selectedCountries, chart, chartSpec);
+    display(this.value, inequalityType, dataBase[this.value], selectedCountries,
+            chart, chartSpec);
   };
 }
