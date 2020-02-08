@@ -68,6 +68,7 @@ describe('percentBarEnterFn', function() {
 
     let nodesAfter = d3.selectAll('div.test g.bar').nodes();
     expect(nodesAfter.length).toBe(2);
+    expect(d3.select('div.test').selectAll('g.bar').data()).toEqual(testData);
   });
 
   it('creates a "no data" element when the entering data = [null]', function() {
@@ -101,7 +102,8 @@ describe('percentBarEnterFn', function() {
         .data(initialData, pb.percentileDataKeyFn)
         .join(enter => pb.percentBarEnterFn(enter, x, 123));
 
-    expect(d3.select('div.test').selectAll('g.bar').data()).toEqual(initialData);
+    expect(d3.select('div.test').selectAll('g.bar').data())
+        .toEqual(initialData);
 
     let newData = [ { lower: '0', upper: '50',
                           sizeLower: 0.0, sizeUpper: 0.5, size: 0.5,
