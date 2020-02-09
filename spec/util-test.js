@@ -106,6 +106,84 @@ describe('makePercentiles', function() {
                                            sizeUpper: 1.0,
                                            country: 'country2' });
   });
+
+  it('handles countries with differing band data', function() {
+    let cd = {
+      'country1': [['p0p90', 0.4], ['p90p100', 0.6]],
+      'country2': [['p0p50', 0.3], ['p50p100', 0.7]],
+    };
+    let percentiles = util.makePercentiles(cd);
+    let pdForC1 = percentiles['country1'];
+    expect(pdForC1.length).toBe(2);
+    expect(pdForC1.find(pd => pd.lower === '0' && pd.upper === '90'))
+        .isObjectContainingApproximately({ lower: '0',
+                                           upper: '90',
+                                           size: 0.4,
+                                           sizeLower: 0.0,
+                                           sizeUpper: 0.4,
+                                           country: 'country1' });
+    expect(pdForC1.find(pd => pd.lower === '90' && pd.upper === '100'))
+        .isObjectContainingApproximately({ lower: '90',
+                                           upper: '100',
+                                           size: 0.6,
+                                           sizeLower: 0.4,
+                                           sizeUpper: 1.0,
+                                           country: 'country1' });
+    let pdForC2 = percentiles['country2'];
+    expect(pdForC2.length).toBe(2);
+    expect(pdForC2.find(pd => pd.lower === '0' && pd.upper === '50'))
+        .isObjectContainingApproximately({ lower: '0',
+                                           upper: '50',
+                                           size: 0.3,
+                                           sizeLower: 0.0,
+                                           sizeUpper: 0.3,
+                                           country: 'country2' });
+    expect(pdForC2.find(pd => pd.lower === '50' && pd.upper === '100'))
+        .isObjectContainingApproximately({ lower: '50',
+                                           upper: '100',
+                                           size: 0.7,
+                                           sizeLower: 0.3,
+                                           sizeUpper: 1.0,
+                                           country: 'country2' });
+  });
+
+  it('handles overlapping (but consistent) bands', function() {
+    let cd = { 'country1': [['p0p90', 0.6],
+                            ['p90p100', 0.4],
+                            ['p90p99', 0.2],
+                            ['p99p100', 0.2]] };
+    let percentiles = util.makePercentiles(cd);
+    let pdForC1 = percentiles['country1'];
+    expect(pdForC1.length).toBe(4);
+    expect(pdForC1.find(pd => pd.lower === '0' && pd.upper === '90'))
+        .isObjectContainingApproximately({ lower: '0',
+                                           upper: '90',
+                                           size: 0.6,
+                                           sizeLower: 0.0,
+                                           sizeUpper: 0.6,
+                                           country: 'country1' });
+    expect(pdForC1.find(pd => pd.lower === '90' && pd.upper === '99'))
+        .isObjectContainingApproximately({ lower: '90',
+                                           upper: '99',
+                                           size: 0.2,
+                                           sizeLower: 0.6,
+                                           sizeUpper: 0.8,
+                                           country: 'country1' });
+    expect(pdForC1.find(pd => pd.lower === '90' && pd.upper === '100'))
+        .isObjectContainingApproximately({ lower: '90',
+                                           upper: '100',
+                                           size: 0.4,
+                                           sizeLower: 0.6,
+                                           sizeUpper: 1.0,
+                                           country: 'country1' });
+    expect(pdForC1.find(pd => pd.lower === '99' && pd.upper === '100'))
+        .isObjectContainingApproximately({ lower: '99',
+                                           upper: '100',
+                                           size: 0.2,
+                                           sizeLower: 0.8,
+                                           sizeUpper: 1.0,
+                                           country: 'country1' });
+  });
 });
 
   describe('getPercentilesForPercentBar', function() {
