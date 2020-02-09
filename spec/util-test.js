@@ -62,7 +62,7 @@ var customMatchers = {
   }
 };
 
-describe('Test getPercentilesForPercentBar', function() {
+describe('getPercentilesForPercentBar', function() {
   beforeEach(function() {
     jasmine.addMatchers(customMatchers);
   });
@@ -119,5 +119,23 @@ describe('Test getPercentilesForPercentBar', function() {
                                 sizeLower: 0.5,
                                 sizeUpper: 1.0,
                                 country: percentileStr });
+  });
+});
+
+describe('computeDesiredPercentiles', function() {
+  it('returns the correct set for 0-90-99-99.9-100', function() {
+    let dp = util.computeDesiredPercentiles('percentBar-0-90-99-99.9-100');
+    expect(dp.size).toBe(4);
+    expect(dp).toContain('0-90');
+    expect(dp).toContain('90-99');
+    expect(dp).toContain('99-99.9');
+    expect(dp).toContain('99.9-100');
+  });
+
+  it('returns the correct set for 0-50-100', function() {
+    let dp = util.computeDesiredPercentiles('percentBar-0-50-100');
+    expect(dp.size).toBe(2);
+    expect(dp).toContain('0-50');
+    expect(dp).toContain('50-100');
   });
 });
