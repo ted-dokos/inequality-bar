@@ -84,15 +84,20 @@ function percentBarEnterFn(enter, x, barHeight) {
  * where each pd_{i,j} is a percentile data object (as described in the output
  * of makePercentiles).
  */
-function countryDataFn(country, data) {
+function countryDataFn(country, desiredPercentiles, data) {
   if (country.startsWith('percentBar')) {
     return getPercentilesForPercentBar(country);
-  } else {
-    let noData =
-        (!data.hasOwnProperty(country) ||
-         data[country] === null || data[country].length === 0);
-    return noData ? [null] : data[country];
   }
+  if (!data.hasOwnProperty(country) ||
+      data[country] === null || data[country].length === 0) {
+    return [null];
+  }
+  let maybeUsableData = data[country].filter(
+      pd => desiredPercentiles.has(pd['lower'] + '-' + pd['upper']));
+  if (maybeUsableData.length === desiredPercentiles.size) {
+    return maybeUsableData;
+  }
+  return [null];
 }
 
 /**
@@ -115,8 +120,17 @@ function percentileDataKeyFn(pd) {
           pd['sizeUpper'].toFixed(20)]
       .join('|');
 }
-
-function display(year, inequalityType, dataOneYear, selectedCountries, chart, chartSpec) {
+/**
+ * @selectedCountries is a list of countries to display. It's expected that the
+ * first element is a percentile string as described in the input to
+ * getPercentilesForPercentBar.
+ */
+function display(year,
+                 inequalityType,
+                 dataOneYear,
+                 selectedCountries,
+                 chart,
+                 chartSpec) {
   let x = d3.scaleLinear()
       .range([chartSpec.chartWidth * 0.02,
               chartSpec.chartWidth * 0.98])
@@ -155,8 +169,12 @@ function display(year, inequalityType, dataOneYear, selectedCountries, chart, ch
                      i * (chartSpec.barHeight + chartSpec.barBuffer)).toString() +
                     ')'});
 
+  // Expect that selectedCountries[0] is a percentile string.
+  let desiredPercentiles = computeDesiredPercentiles(selectedCountries[0]);
+
   countries.selectAll('g.bar')
-      .data(c => countryDataFn(c, dataOneYear), percentileDataKeyFn)
+      .data(c => countryDataFn(c, desiredPercentiles, dataOneYear),
+            percentileDataKeyFn)
       .join(enter => percentBarEnterFn(enter, x, chartSpec.barHeight));
 
   // Add country names to the chart.

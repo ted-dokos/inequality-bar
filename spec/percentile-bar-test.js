@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 var pb = require('../src/percentile-bar.js');
+var util = require('../src/util.js');
 var d3 = require("d3");
 
 const jsdom = require("jsdom");
@@ -21,20 +22,39 @@ const { JSDOM } = jsdom;
 
 describe('countryDataFn', function() {
   it('returns [null] when the country is not in the data', function() {
-    expect(pb.countryDataFn('France', {})).toEqual([null]);
+    let desiredPercentiles = new Set();
+    expect(pb.countryDataFn('France', desiredPercentiles, {})).toEqual([null]);
   });
 
   it('returns [null] when the country is trivially in the data',
      function() {
-       expect(pb.countryDataFn('France', { 'France': null })).toEqual([null]);
-       expect(pb.countryDataFn('France', { 'France': [], })).toEqual([null]);
+       let dp = new Set();
+       expect(pb.countryDataFn('France',
+                               dp,
+                               { 'France': null })).toEqual([null]);
+       expect(pb.countryDataFn('France',
+                               dp,
+                               { 'France': [], })).toEqual([null]);
      });
 
   it('gets country data when present', function() {
-    let data = ['not', 'real', 'data', 'but', 'whatevs'];
-    expect(pb.countryDataFn('France', { 'France': data.slice() }))
+    let percentileStr = 'percentBar-0-50-100';
+    let data = util.getPercentilesForPercentBar(percentileStr);
+    let dp = util.computeDesiredPercentiles(percentileStr);
+    expect(pb.countryDataFn('France', dp, { 'France': data }))
         .toEqual(data);
   });
+
+  it('gets country data when present, with extraneous data',
+     function() {
+       let percentileStr = 'percentBar-0-50-100';
+       let expectedOutput = util.getPercentilesForPercentBar(percentileStr);
+       let data = expectedOutput.concat(
+           util.getPercentilesForPercentBar('percentBar-0-25-60-90-100'));
+       let dp = util.computeDesiredPercentiles(percentileStr);
+       expect(pb.countryDataFn('France', dp, { 'France': data }))
+           .toEqual(expectedOutput);
+     });
 });
 
 describe('percentBarEnterFn', function() {
