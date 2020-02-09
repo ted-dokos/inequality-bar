@@ -97,7 +97,8 @@ function makePercentiles(countryList) {
 
 /**
  * Create percentile data objects whose sizes are exactly equal to the
- * difference between the upper and lower percentiles.
+ * difference between the upper and lower percentiles in the input percentile
+ * string.
  * @percentileStr has the format 'percentBar-0-x_2-...-x_n-100', where x_i is
  * strictly increasing.
  * @output has the same output format as makePercentiles.
@@ -122,9 +123,29 @@ function getPercentilesForPercentBar(percentileStr) {
   return out;
 }
 
+/**
+ * Compute from a percentile string a set of percentiles it represents. This can
+ * be used to filter out percentile data from a larger collection.
+ * @percentileStr has the format 'percentBar-0-x_2-...-x_n-100', where x_i is
+ * strictly increasing.
+ * @output is the Set of strings { 'x_i-x_i+1' }.
+ */
+function computeDesiredPercentiles(percentileStr) {
+  let split = percentileStr.split('-');
+  out = new Set();
+  split.forEach(
+      function(p, i) {
+        if (i > 0 && i+1 < split.length) {
+          out.add(split[i] + '-' + split[i+1]);
+        }});
+  return out;
+}
+
+
 if ( typeof module !== 'undefined' && module.hasOwnProperty('exports') )
 {
   module.exports = {
     'getPercentilesForPercentBar': getPercentilesForPercentBar,
+    'computeDesiredPercentiles': computeDesiredPercentiles,
   };
 }
