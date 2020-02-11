@@ -62,65 +62,199 @@ var customMatchers = {
   }
 };
 
-describe('getPercentilesForPercentBar', function() {
+describe('makePercentiles', function() {
   beforeEach(function() {
     jasmine.addMatchers(customMatchers);
   });
 
-  it('returns the right buckets for 0-90-99-99.9-100', function() {
-    let percentileStr = 'percentBar-0-90-99-99.9-100';
-    let percentiles = util.getPercentilesForPercentBar(percentileStr);
-    expect(percentiles.length).toBe(4);
-    expect(percentiles.find(p => p.lower === '0' && p.upper === '90'))
+  it('creates the expected data in the case 0-50-100', function() {
+    let cd = {
+      'country1': [['p0p50', 0.4], ['p50p100', 0.6]],
+      'country2': [['p0p50', 0.3], ['p50p100', 0.7]],
+    };
+    let percentiles = util.makePercentiles(cd);
+    let pdForC1 = percentiles['country1'];
+    expect(pdForC1.length).toBe(2);
+    expect(pdForC1.find(pd => pd.lower === '0' && pd.upper === '50'))
         .isObjectContainingApproximately({ lower: '0',
-                                upper: '90',
-                                size: 0.9,
-                                sizeLower: 0.0,
-                                sizeUpper: 0.9,
-                                country: percentileStr });
-    expect(percentiles.find(p => p.lower === '90' && p.upper === '99'))
-        .isObjectContainingApproximately({ lower: '90',
-                                upper: '99',
-                                size: 0.09,
-                                sizeLower: 0.9,
-                                sizeUpper: 0.99,
-                                country: percentileStr });
-    expect(percentiles.find(p => p.lower === '99' && p.upper === '99.9'))
-        .isObjectContainingApproximately({ lower: '99',
-                                upper: '99.9',
-                                size: 0.009,
-                                sizeLower: 0.99,
-                                sizeUpper: 0.999,
-                                country: percentileStr });
-    expect(percentiles.find(p => p.lower === '99.9' && p.upper === '100'))
-        .isObjectContainingApproximately({ lower: '99.9',
-                                upper: '100',
-                                size: 0.001,
-                                sizeLower: 0.999,
-                                sizeUpper: 1.0,
-                                country: percentileStr });
+                                           upper: '50',
+                                           size: 0.4,
+                                           sizeLower: 0.0,
+                                           sizeUpper: 0.4,
+                                           country: 'country1' });
+    expect(pdForC1.find(pd => pd.lower === '50' && pd.upper === '100'))
+        .isObjectContainingApproximately({ lower: '50',
+                                           upper: '100',
+                                           size: 0.6,
+                                           sizeLower: 0.4,
+                                           sizeUpper: 1.0,
+                                           country: 'country1' });
+    let pdForC2 = percentiles['country2'];
+    expect(pdForC2.length).toBe(2);
+    expect(pdForC2.find(pd => pd.lower === '0' && pd.upper === '50'))
+        .isObjectContainingApproximately({ lower: '0',
+                                           upper: '50',
+                                           size: 0.3,
+                                           sizeLower: 0.0,
+                                           sizeUpper: 0.3,
+                                           country: 'country2' });
+    expect(pdForC2.find(pd => pd.lower === '50' && pd.upper === '100'))
+        .isObjectContainingApproximately({ lower: '50',
+                                           upper: '100',
+                                           size: 0.7,
+                                           sizeLower: 0.3,
+                                           sizeUpper: 1.0,
+                                           country: 'country2' });
   });
 
-  it('returns the right buckets for 0-50-100', function() {
-    let percentileStr = 'percentBar-0-50-100';
-    let percentiles = util.getPercentilesForPercentBar(percentileStr);
-    expect(percentiles.length).toBe(2);
-    expect(percentiles.find(p => p.lower === '0' && p.upper === '50'))
+  it('handles countries with differing band data', function() {
+    let cd = {
+      'country1': [['p0p90', 0.4], ['p90p100', 0.6]],
+      'country2': [['p0p50', 0.3], ['p50p100', 0.7]],
+    };
+    let percentiles = util.makePercentiles(cd);
+    let pdForC1 = percentiles['country1'];
+    expect(pdForC1.length).toBe(2);
+    expect(pdForC1.find(pd => pd.lower === '0' && pd.upper === '90'))
         .isObjectContainingApproximately({ lower: '0',
-                                upper: '50',
-                                size: 0.5,
-                                sizeLower: 0.0,
-                                sizeUpper: 0.5,
-                                country: percentileStr });
-    expect(percentiles.find(p => p.lower === '50' && p.upper === '100'))
+                                           upper: '90',
+                                           size: 0.4,
+                                           sizeLower: 0.0,
+                                           sizeUpper: 0.4,
+                                           country: 'country1' });
+    expect(pdForC1.find(pd => pd.lower === '90' && pd.upper === '100'))
+        .isObjectContainingApproximately({ lower: '90',
+                                           upper: '100',
+                                           size: 0.6,
+                                           sizeLower: 0.4,
+                                           sizeUpper: 1.0,
+                                           country: 'country1' });
+    let pdForC2 = percentiles['country2'];
+    expect(pdForC2.length).toBe(2);
+    expect(pdForC2.find(pd => pd.lower === '0' && pd.upper === '50'))
+        .isObjectContainingApproximately({ lower: '0',
+                                           upper: '50',
+                                           size: 0.3,
+                                           sizeLower: 0.0,
+                                           sizeUpper: 0.3,
+                                           country: 'country2' });
+    expect(pdForC2.find(pd => pd.lower === '50' && pd.upper === '100'))
         .isObjectContainingApproximately({ lower: '50',
-                                upper: '100',
-                                size: 0.5,
-                                sizeLower: 0.5,
-                                sizeUpper: 1.0,
-                                country: percentileStr });
+                                           upper: '100',
+                                           size: 0.7,
+                                           sizeLower: 0.3,
+                                           sizeUpper: 1.0,
+                                           country: 'country2' });
+  });
+
+  it('handles overlapping (but consistent) bands', function() {
+    let cd = { 'country1': [['p0p90', 0.6],
+                            ['p90p100', 0.4],
+                            ['p90p99', 0.2],
+                            ['p99p100', 0.2]] };
+    let percentiles = util.makePercentiles(cd);
+    let pdForC1 = percentiles['country1'];
+    expect(pdForC1.length).toBe(4);
+    expect(pdForC1.find(pd => pd.lower === '0' && pd.upper === '90'))
+        .isObjectContainingApproximately({ lower: '0',
+                                           upper: '90',
+                                           size: 0.6,
+                                           sizeLower: 0.0,
+                                           sizeUpper: 0.6,
+                                           country: 'country1' });
+    expect(pdForC1.find(pd => pd.lower === '90' && pd.upper === '99'))
+        .isObjectContainingApproximately({ lower: '90',
+                                           upper: '99',
+                                           size: 0.2,
+                                           sizeLower: 0.6,
+                                           sizeUpper: 0.8,
+                                           country: 'country1' });
+    expect(pdForC1.find(pd => pd.lower === '90' && pd.upper === '100'))
+        .isObjectContainingApproximately({ lower: '90',
+                                           upper: '100',
+                                           size: 0.4,
+                                           sizeLower: 0.6,
+                                           sizeUpper: 1.0,
+                                           country: 'country1' });
+    expect(pdForC1.find(pd => pd.lower === '99' && pd.upper === '100'))
+        .isObjectContainingApproximately({ lower: '99',
+                                           upper: '100',
+                                           size: 0.2,
+                                           sizeLower: 0.8,
+                                           sizeUpper: 1.0,
+                                           country: 'country1' });
+  });
+
+  it('logs an error when overlapping bands are inconsistent', function(){
+    spyOn(console, 'error');
+    let cd = { 'country1': [['p0p90', 0.6],
+                            ['p90p100', 0.4],
+                            ['p90p99', 0.3],
+                            ['p99p100', 0.2]] };
+    util.makePercentiles(cd);
+    expect(console.error).toHaveBeenCalled();
   });
 });
+
+  describe('getPercentilesForPercentBar', function() {
+    beforeEach(function() {
+      jasmine.addMatchers(customMatchers);
+    });
+
+    it('returns the right buckets for 0-90-99-99.9-100', function() {
+      let percentileStr = 'percentBar-0-90-99-99.9-100';
+      let percentiles = util.getPercentilesForPercentBar(percentileStr);
+      expect(percentiles.length).toBe(4);
+      expect(percentiles.find(p => p.lower === '0' && p.upper === '90'))
+          .isObjectContainingApproximately({ lower: '0',
+                                             upper: '90',
+                                             size: 0.9,
+                                             sizeLower: 0.0,
+                                             sizeUpper: 0.9,
+                                             country: percentileStr });
+      expect(percentiles.find(p => p.lower === '90' && p.upper === '99'))
+          .isObjectContainingApproximately({ lower: '90',
+                                             upper: '99',
+                                             size: 0.09,
+                                             sizeLower: 0.9,
+                                             sizeUpper: 0.99,
+                                             country: percentileStr });
+      expect(percentiles.find(p => p.lower === '99' && p.upper === '99.9'))
+          .isObjectContainingApproximately({ lower: '99',
+                                             upper: '99.9',
+                                             size: 0.009,
+                                             sizeLower: 0.99,
+                                             sizeUpper: 0.999,
+                                             country: percentileStr });
+      expect(percentiles.find(p => p.lower === '99.9' && p.upper === '100'))
+          .isObjectContainingApproximately({ lower: '99.9',
+                                             upper: '100',
+                                             size: 0.001,
+                                             sizeLower: 0.999,
+                                             sizeUpper: 1.0,
+                                             country: percentileStr });
+    });
+
+    it('returns the right buckets for 0-50-100', function() {
+      let percentileStr = 'percentBar-0-50-100';
+      let percentiles = util.getPercentilesForPercentBar(percentileStr);
+      expect(percentiles.length).toBe(2);
+      expect(percentiles.find(p => p.lower === '0' && p.upper === '50'))
+          .isObjectContainingApproximately({ lower: '0',
+                                             upper: '50',
+                                             size: 0.5,
+                                             sizeLower: 0.0,
+                                             sizeUpper: 0.5,
+                                             country: percentileStr });
+      expect(percentiles.find(p => p.lower === '50' && p.upper === '100'))
+          .isObjectContainingApproximately({ lower: '50',
+                                             upper: '100',
+                                             size: 0.5,
+                                             sizeLower: 0.5,
+                                             sizeUpper: 1.0,
+                                             country: percentileStr });
+    });
+  });
 
 describe('computeDesiredPercentiles', function() {
   it('returns the correct set for 0-90-99-99.9-100', function() {

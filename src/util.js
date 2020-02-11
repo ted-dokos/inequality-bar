@@ -16,15 +16,14 @@
 
 /**
  * Given an ordered list of percentiles @percentileList, and a dictionary of
- * countries with bin sizes for these percentile bands @countryList, return a
- * dictionary of countries with a list of 'bins', i.e. each pair of consecutive
- * percentiles.
- * @countryList has the following format:
+ * countries with bin sizes for these percentile bands, return a dictionary of
+ * countries with a list of percentile data objects.
+ * @countryDict has the following format:
  * { countryName: [ [pLpU, size_as_str ], ... ],
  *   ...
  * }
  * where L and U are the lower and upper bounds on the percentile, as strings
- * (e.g. '0' and '90').
+ * (e.g. '0' and '90' is represented as 'p0p90').
  * @output has the following format:
  * { countryName: [
  *     { lower: the lower percentile as a string,
@@ -38,15 +37,15 @@
  *   ...
  * }
  */
-function makePercentiles(countryList) {
+function makePercentiles(countryDict) {
   var out = {};
 
-  Object.keys(countryList).forEach(function(countryName) {
+  Object.keys(countryDict).forEach(function(countryName) {
     // Process each percent band, but do it in lexicographic order. This ensures
     // that we can get subsequent lower and upper bounds. (i.e. process p0p90
     // before p90p99, etc).
     var percentBounds = {'0': 0.0};
-    var sizes = countryList[countryName];
+    var sizes = countryDict[countryName];
     if (sizes === null) {
       return;
     }
@@ -145,6 +144,7 @@ function computeDesiredPercentiles(percentileStr) {
 if ( typeof module !== 'undefined' && module.hasOwnProperty('exports') )
 {
   module.exports = {
+    'makePercentiles': makePercentiles,
     'getPercentilesForPercentBar': getPercentilesForPercentBar,
     'computeDesiredPercentiles': computeDesiredPercentiles,
   };
