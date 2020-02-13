@@ -16,8 +16,7 @@ from collections import defaultdict
 import csv
 import json
 
-
-def process_colunm_names(names):
+def process_column_names(names):
   out = names[:]
   assert (out[0] == 'Percentile')
   assert (out[1] == 'Year')
@@ -31,7 +30,7 @@ with open('wid-data.csv', newline='') as widdata:
   ## Skip the header
   next(datareader)
   ## Strip additional data out of the country names
-  colnames = process_colunm_names(next(datareader))
+  colnames = process_column_names(next(datareader))
 
   percentiles = set()
   databyyear = defaultdict(lambda: defaultdict(list))
