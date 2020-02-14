@@ -178,14 +178,19 @@ function display(year,
       .join(enter => percentBarEnterFn(enter, x, chartSpec.barHeight));
 
   // Add country names to the chart.
-  countries.filter(c => !c.startsWith('percentBar'))
+  countries
       .selectAll('g.country text.countryName')
       .data(country => [country])
       .join('text')
       .attr('class', 'countryName')
       .attr('x', x(0))
       .attr('y', -5)
-      .text(c => c);
+      .text(c => {
+        if (c.startsWith('percentBar')) {
+          return 'Country population, from least income to most income';
+        }
+        return c;
+      });
 
   // Update the axis.
   chart.selectAll('g.axis')
