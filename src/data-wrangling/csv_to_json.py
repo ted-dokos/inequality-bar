@@ -53,8 +53,10 @@ def compute_implicit_ranges(percentiledata):
   """
   # Treat this as a weighted graph traversal problem.
   g = defaultdict(dict)
-  g['0']['100'] = '1.0'
-  g['100']['0'] = '-1.0'
+  def make_edge(v1, v2, wstr):
+    g[v1][v2] = wstr
+    g[v2][v1] = '-' + wstr
+  make_edge('0', '100', '1.0')
 
   for percentilestr, size in percentiledata:
     if size == '':
@@ -62,38 +64,44 @@ def compute_implicit_ranges(percentiledata):
     split = percentilestr.split('p')
     lower = split[1]
     upper = split[2]
-    g[lower][upper] = size
-    g[upper][lower] = str(-1 * float(size))
+    make_edge(lower, upper, size)
 
   # Only traverse the connected component containing 0, I don't care about the
   # rest. For each vertex 'peek', calculate the weight of the path from 0 to
   # peek, and add that as an edge from 0 to peek (as well as the complement
   # weight from peek to 100).
-  explored = set()
-  explored.add('0')
-  stack = list(g['0'].keys())
-  path = ['0']
+  processed = set(['0'])
+  toprocess = list(g['0'].keys())
+  path = ['0', toprocess[-1]]
+  pathset = set(path)
   def sumpath(path):
     return sum(map(lambda e: float(g[e[0]][e[1]]), \
                    zip(path, path[1:])))
 
-  while len(stack) > 0:
-    peek = stack[-1]
-    path.append(peek)
-
-    if peek in explored:
-      stack.pop()
+  while len(toprocess) > 0:
+    current = toprocess[-1]
+    # Invariant: at the beginning of the loop, current is the last element of
+    # path and toprocess.
+    nextneighbors = list(
+        filter(lambda v: v not in processed and v not in pathset,
+               g[current].keys()))
+    if len(nextneighbors) == 0:
+      # Leaf case.
+      if current not in g['0']:
+        make_edge('0', current, str(sumpath(path)))
+      processed.add(current)
+      pathset.remove(current)
       path.pop()
-      continue
-
-    if '0' not in g[peek]:
-      sp = sumpath(path)
-      g[peek]['0'] = str(-sp)
-      g['0'][peek] = str(sp)
-      g[peek]['100'] = str(1.0 - sp)
-      g['100'][peek] = str(sp - 1.0)
-    explored.add(peek)
-    stack.extend(list(g[peek].keys()))
+      toprocess.pop()
+      # Handle the case when the parent on the path has more children. We must
+      # update the path to land on the next child.
+      if len(toprocess) > 0 and toprocess[-1] != path[-1]:
+        path.append(toprocess[-1])
+        pathset.add(toprocess[-1])
+    else:
+      toprocess.extend(nextneighbors)
+      path.append(toprocess[-1])
+      pathset.add(toprocess[-1])
 
   # Now compute edges from v1 to v2 using the edges to 0, when possible.
   for v1 in g.keys():
@@ -114,83 +122,11 @@ def compute_implicit_ranges(percentiledata):
     for v2 in g[v1].keys():
       if float(g[v1][v2]) < 0:
         continue
+      if v1 == '0' and v2 == '100':
+        continue
       rangedata.append(('p' + v1 + 'p' + v2, g[v1][v2]))
   return rangedata
 
-
-
-def compute_implicit_ranges2(percentiledata):
-  """Given an input list PERCENTILEDATA (with elements structured as
-  (percentilestr, sizestr)), return a similar list of percentile data, with
-  blank elements removed, and implicit ranges added. An example is helpful:
-  given the percentiles ('p0p90', '0.6'), ('p0p50', '0.3'), and ('p90p100',
-  '0.4'), there are two implicit ranges we can determine: ('p50p90', '0.3') and
-  ('p50p100', 0.7).
-  """
-  def add(lower, upper, size):
-    percents.add(lower)
-    percents.add(upper)
-
-    rangedata[(lower, upper)] = size
-    for p in percents:
-      if p == lower or p == upper:
-        continue
-
-      if float(p) > float(upper):
-        large = (lower, p)
-        if large in rangedata:
-          rangedata[(upper, p)] = str(float(rangedata[large]) - float(size))
-        small = (upper, p)
-        if small in rangedata:
-          rangedata[(lower, p)] = str(float(size) + float(rangedata[small]))
-
-      if float(p) < float(lower):
-        large = (p, upper)
-        if large in rangedata:
-          rangedata[(p, lower)] = str(float(rangedata[large]) - float(size))
-        small = (p, lower)
-        if small in rangedata:
-          rangedata[(p, upper)] = str(float(rangedata[small]) + float(size))
-
-      if float(lower) < float(p) < float(upper):
-        midleft = (lower, p)
-        midright = (p, upper)
-        if midleft in rangedata:
-          rangedata[midright] = str(float(size) - float(rangedata[midleft]))
-        if midright in rangedata:
-          rangedata[midleft] = str(float(size) - float(rangedata[midright]))
-
-
-  rangedata = dict()
-  percents = set()
-  add('0', '100', '1.0')
-
-  for percentile, size in percentiledata:
-    if size == '':
-      continue
-    split = percentile.split('p')
-    lower = split[1]
-    upper = split[2]
-
-
-    add(lower, upper, size)
-
-    # if lower == '0' and upper != '100':
-    #   complement = 'p' + upper + 'p100'
-    #   rangedata[complement] = str(1 - float(size))
-
-    # if upper == '100' and lower != '0':
-    #   complement = 'p0p' + lower
-    #   rangedata[complement] = str(1 - float(size))
-
-    # if lower !='0' and upper != '100':
-    #   complementleft = 'p0p'+lower
-    #   complementright = 'p' + upper + 'p100'
-    #   if complementleft in rangedata and complementright not in rangedata:
-    #     rangedata[complementright] = str(1 - float(size) - float(rangedata[complementleft]))
-    #   if complementright in rangedata and complementleft not in rangedata:
-    #     rangedata[complementleft] = str(1 - float(size) - float(rangedata[complementright]))
-  return rangedata
 
 if __name__ == '__main__':
   with open('wid-data.csv', newline='') as widdata:
@@ -204,40 +140,8 @@ if __name__ == '__main__':
     databyyear = defaultdict(lambda: defaultdict(list))
 
     for (year, country), percentiledata in ycdata.items():
-      #print(len(compute_implicit_ranges(percentiledata)))
-      break
-    #databyyear[year][country] = compute_implicit_ranges(percentiledata)
-
-    # percentiles = set()
-    # databyyear = defaultdict(lambda: defaultdict(list))
-    # for row in datareader:
-    #   percentile = row[0]
-    #   percentiles.add(percentile)
-    #   year = row[1]
-    #   for i, binsize in enumerate(row[2:], start=2):
-    #     country = colnames[i]
-    #     databyyear[year][country].append((percentile, binsize))
-
-    # # 1. None-ify any trivial country-years.
-    # # 2. Repair country-years that have one missing entry (100 - rest)
-    # # 3. None-ify any non-repairable country-years.
-    # for year in databyyear:
-    #   countriesbyyear = databyyear[year]
-    #   for country in countriesbyyear:
-    #     assert (len(countriesbyyear[country]) > 0)
-    #     if all([x[1] == '' for x in countriesbyyear[country]]):
-    #       countriesbyyear[country] = None
-    #     elif sum([x[1] == '' for x in countriesbyyear[country]]) == 1:
-    #       otherstotal = 0.0
-    #       missingindex = -1
-    #       for i, x in enumerate(countriesbyyear[country]):
-    #         if x[1] == '':
-    #           missingindex = i
-    #         else:
-    #           otherstotal += float(x[1])
-    #       countriesbyyear[country][missingindex] = (
-    #           countriesbyyear[country][missingindex][0], 1.0 - otherstotal)
-    #     elif any([x[1] == '' for x in countriesbyyear[country]]):
-    #       countriesbyyear[country] = None
+      rd = compute_implicit_ranges(percentiledata)
+      if len(rd) > 0:
+        databyyear[year][country] = rd
 
   print(json.dumps(databyyear))
