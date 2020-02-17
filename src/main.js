@@ -20,8 +20,6 @@ var selectedCountries = ['percentBar-0-90-99-99.9-100',
                          'Sweden',];
 var debug = true;
 
-var percentiles = [0, 0.9, 0.99, 0.999, 1.0];
-
 var dataBase = {};
 // Data defined in data.js
 if (debug) {

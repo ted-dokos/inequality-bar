@@ -135,6 +135,10 @@ function display(year,
       .range([chartSpec.chartWidth * 0.02,
               chartSpec.chartWidth * 0.98])
       .domain([0, 1.0]);
+  // Expect that selectedCountries[0] is a percentile string.
+  let percentileStr = selectedCountries[0];
+  let percentiles = percentileStr.split('-').slice(1)
+      .map(s => parseFloat(s) / 100);
 
   let percentileAxis =
       d3.axisBottom().scale(x).tickValues(percentiles).tickFormat(d => {
@@ -169,8 +173,7 @@ function display(year,
                      i * (chartSpec.barHeight + chartSpec.barBuffer)).toString() +
                     ')'});
 
-  // Expect that selectedCountries[0] is a percentile string.
-  let desiredPercentiles = computeDesiredPercentiles(selectedCountries[0]);
+  let desiredPercentiles = computeDesiredPercentiles(percentileStr);
 
   countries.selectAll('g.bar')
       .data(c => countryDataFn(c, desiredPercentiles, dataOneYear),
