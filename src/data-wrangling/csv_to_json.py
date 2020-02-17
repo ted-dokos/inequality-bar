@@ -128,6 +128,20 @@ def compute_implicit_ranges(percentiledata):
   return rangedata
 
 
+def is_range_of_interest(percentiledatum):
+  is_range_of_interest.interestingranges = set([
+      'p0p50',
+      'p0p90',
+      'p50p90',
+      'p90p99',
+      'p90p100',
+      'p99p99.9',
+      'p99p100',
+      'p99.9p100',
+      ])
+  return percentiledatum[0] in is_range_of_interest.interestingranges
+
+
 if __name__ == '__main__':
   with open('wid-data.csv', newline='') as widdata:
     datareader = csv.reader(widdata, delimiter=';', quotechar='"')
@@ -142,6 +156,6 @@ if __name__ == '__main__':
     for (year, country), percentiledata in ycdata.items():
       rd = compute_implicit_ranges(percentiledata)
       if len(rd) > 0:
-        databyyear[year][country] = rd
+        databyyear[year][country] = list(filter(is_range_of_interest, rd))
 
   print(json.dumps(databyyear))
