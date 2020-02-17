@@ -185,14 +185,14 @@ describe('makePercentiles', function() {
                                            country: 'country1' });
   });
 
-  it('logs an error when overlapping bands are inconsistent', function(){
-    spyOn(console, 'error');
+  it('logs a warning when overlapping bands are inconsistent', function(){
+    spyOn(console, 'warn');
     let cd = { 'country1': [['p0p90', 0.6],
                             ['p90p100', 0.4],
                             ['p90p99', 0.3],
                             ['p99p100', 0.2]] };
     util.makePercentiles(cd);
-    expect(console.error).toHaveBeenCalled();
+    expect(console.warn).toHaveBeenCalled();
   });
 });
 
