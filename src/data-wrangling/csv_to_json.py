@@ -122,8 +122,6 @@ def compute_implicit_ranges(percentiledata):
     for v2 in g[v1].keys():
       if float(g[v1][v2]) < 0:
         continue
-      if v1 == '0' and v2 == '100':
-        continue
       rangedata.append(('p' + v1 + 'p' + v2, g[v1][v2]))
   return rangedata
 
