@@ -153,7 +153,8 @@ if __name__ == '__main__':
 
     for (year, country), percentiledata in ycdata.items():
       rd = compute_implicit_ranges(percentiledata)
-      if len(rd) > 0:
-        databyyear[year][country] = list(filter(is_range_of_interest, rd))
+      rdfiltered = list(filter(is_range_of_interest, rd))
+      if len(rdfiltered) > 0:
+        databyyear[year][country] = rdfiltered
 
   print(json.dumps(databyyear))
