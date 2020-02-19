@@ -21,4 +21,4 @@ deploy:
   edge: true
   provider: pages:git
   on:
-    branch: gh-pages
+    branch: master
