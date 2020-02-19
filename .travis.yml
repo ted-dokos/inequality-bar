@@ -1,4 +1,9 @@
-language: node_js
-node_js:
- - "node"
-# default script is 'npm test'?
+jobs:
+  include:
+    - language: node_js
+      node_js:
+        - "node"
+      script: npm test
+    - language: python
+      python: 3.8
+      script: python src/data-wrangling/csv_to_json_test.py

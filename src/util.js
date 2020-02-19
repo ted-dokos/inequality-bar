@@ -71,11 +71,11 @@ function makePercentiles(countryDict) {
       }
       var upperBound = percentBounds[lower] + size;
       // Ensure data consistency if this one's already been handled.
-      var consistencyThreshold = 0.01 / 100;  // 0.01 percent
+      var consistencyThreshold = 1.0 / 100;  // 1 percent
       if (percentBounds.hasOwnProperty(upper) &&
           Math.abs((upperBound - percentBounds[upper]) / upperBound) >
               consistencyThreshold) {
-        console.error(
+        console.warn(
             'Data inconsistency: calculated percentile bound of %s at percentile %s, but was already calculated as %s',
             upperBound, upper, percentBounds[upper]);
       }
