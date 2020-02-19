@@ -1,17 +1,13 @@
 jobs:
   include:
-    - stage: test
-      - language: node_js
-        node_js:
-          - "node"
-        script: npm test
-      - language: python
-        python: 3.8
-        script: python src/data-wrangling/csv_to_json_test.py
-    - stage: deploy
-      - language: python
-        python: 3.8
-        script:
+    - language: node_js
+      node_js:
+        - "node"
+      script: npm test
+    - language: python
+      python: 3.8
+      script: python src/data-wrangling/csv_to_json_test.py
+      script:
           python
           src/data-wrangling/csv_to_json.py
           src/data-wrangling/wid-data.csv > src/data.json
