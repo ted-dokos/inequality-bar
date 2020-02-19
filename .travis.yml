@@ -20,5 +20,6 @@ jobs:
 deploy:
   edge: true
   provider: pages:git
+  github_token: $GITHUB_TOKEN
   on:
     branch: master
