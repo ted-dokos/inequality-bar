@@ -21,20 +21,22 @@ var selectedCountries = ['percentBar-0-90-99-99.9-100',
 var debug = true;
 
 var dataBase = {};
-// Data defined in data.js
-if (debug) {
-  console.log(data);
-}
-for (var year of Object.keys(data)) {
-  dataBase[year] = makePercentiles(data[year]);
-}
 
-if (debug) {
-  console.log(dataBase);
-}
+var dataPromise = fetch('src/data.json')
+    .then(response => response.json())
+    .then(function(data) {
+      if (debug) {
+        console.log(data);
+      }
+        return new Promise(resolve => {
+          let db = {};
+          Object.keys(data).forEach(
+              year => { db[year] = makePercentiles(data[year]); });
+          resolve(db);
+        });
+    });
 
 var upNext = '2014';
-var displayData = dataBase['1980'];
 
 var chartSpec = {
   chartWidth: 1000,
@@ -71,7 +73,12 @@ function setYear(y = undefined) {
   }
 }
 
-function main() {
+async function main() {
+  dataBase = await dataPromise;
+  if (debug) {
+    console.log(dataBase);
+  }
+
   chart =
       d3.select('.chart')
       .attr('width', chartSpec.chartWidth)
@@ -81,7 +88,7 @@ function main() {
       .attr('transform',
             'translate(0, ' + (chartSpec.barHeight + yShift).toString() + ')');
 
-  display('1980', inequalityType, displayData, selectedCountries, chart,
+  display('1980', inequalityType, dataBase['1980'], selectedCountries, chart,
           chartSpec);
 
   var yearBox = document.getElementById('foo');
