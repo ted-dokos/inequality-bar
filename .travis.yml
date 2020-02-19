@@ -10,7 +10,7 @@ jobs:
       python: 3.8
       script: python src/data-wrangling/csv_to_json_test.py
     - stage: deploy
-      if: branch = gh-pages
+      # if: branch = gh-pages
       language: python
       python: 3.8
       script: python
@@ -20,5 +20,6 @@ jobs:
 deploy:
   edge: true
   provider: pages:git
+  github_token: $GITHUB_TOKEN
   on:
-    branch: gh-pages
+    branch: master
