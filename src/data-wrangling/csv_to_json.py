@@ -15,6 +15,7 @@
 from collections import defaultdict
 import csv
 import json
+import sys
 
 
 def process_column_names(names):
@@ -141,7 +142,7 @@ def is_range_of_interest(percentiledatum):
 
 
 if __name__ == '__main__':
-  with open('wid-data.csv', newline='') as widdata:
+  with open(sys.argv[1], newline='') as widdata:
     datareader = csv.reader(widdata, delimiter=';', quotechar='"')
     ## Skip the header
     next(datareader)
