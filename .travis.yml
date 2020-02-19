@@ -7,3 +7,16 @@ jobs:
     - language: python
       python: 3.8
       script: python src/data-wrangling/csv_to_json_test.py
+    - if: branch = gh-pages
+      language: python
+      python: 3.8
+      script:
+        python
+        src/data-wrangling/csv_to_json.py
+        src/data-wrangling/wid-data.csv > src/data.json
+
+deploy:
+  edge: true
+  provider: pages:git
+  on:
+    branch: gh-pages
