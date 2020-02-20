@@ -28,12 +28,12 @@ var dataPromise = fetch('src/data.json')
       if (debug) {
         console.log(data);
       }
-        return new Promise(resolve => {
-          let db = {};
-          Object.keys(data).forEach(
-              year => { db[year] = makePercentiles(data[year]); });
-          resolve(db);
-        });
+      return new Promise(resolve => {
+        let db = {};
+        Object.keys(data).forEach(
+            year => { db[year] = makePercentiles(data[year]); });
+        resolve(db);
+      });
     });
 
 var upNext = '2014';
