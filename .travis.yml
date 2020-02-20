@@ -16,10 +16,9 @@ jobs:
       script: python
         src/data-wrangling/csv_to_json.py
         src/data-wrangling/wid-data.csv > src/data.json
-
-deploy:
-  edge: true
-  provider: pages:git
-  token: $GITHUB_TOKEN
-  on:
-    branch: master
+      deploy:
+        edge: true
+        provider: pages:git
+        github_token: $GITHUB_TOKEN
+        on:
+          branch: master
