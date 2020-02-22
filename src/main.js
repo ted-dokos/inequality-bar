@@ -22,6 +22,7 @@ var debug = true;
 
 var dataBase = {};
 
+// JSON data files are built by the deploy stage in .travis.yml.
 var dataPromise = fetch('src/income-data.json')
     .then(response => response.json())
     .then(function(data) {
