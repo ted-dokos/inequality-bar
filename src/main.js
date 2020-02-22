@@ -22,7 +22,7 @@ var debug = true;
 
 var dataBase = {};
 
-var dataPromise = fetch('src/data.json')
+var dataPromise = fetch('src/income-data.json')
     .then(response => response.json())
     .then(function(data) {
       if (debug) {

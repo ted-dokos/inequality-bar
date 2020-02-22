@@ -15,7 +15,7 @@ jobs:
       python: 3.8
       script: python
         src/data-wrangling/csv_to_json.py
-        src/data-wrangling/wid-data.csv > src/data.json
+        src/data-wrangling/wid-income-data.csv > src/income-data.json
       deploy:
         edge: true
         provider: pages:git
