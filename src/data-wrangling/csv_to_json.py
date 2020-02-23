@@ -56,7 +56,7 @@ def compute_implicit_ranges(percentiledata):
   g = defaultdict(dict)
   def make_edge(v1, v2, wstr):
     g[v1][v2] = wstr
-    g[v2][v1] = '-' + wstr
+    g[v2][v1] = wstr[1:] if wstr[0] == '-' else '-' + wstr
   make_edge('0', '100', '1.0')
 
   for percentilestr, size in percentiledata:
@@ -116,12 +116,11 @@ def compute_implicit_ranges(percentiledata):
       if v1 not in g[v2]:
         g[v2][v1] = str(float(g['0'][v1]) - float(g['0'][v2]))
 
-  # Format output, positive weight edges only (which should correspond exactly
-  # to pXpY, where X < Y).
+  # Output should be only the edges pXpY, where X < Y.
   rangedata = []
   for v1 in g.keys():
     for v2 in g[v1].keys():
-      if float(g[v1][v2]) < 0:
+      if float(v1) > float(v2):
         continue
       rangedata.append(('p' + v1 + 'p' + v2, g[v1][v2]))
   return rangedata
