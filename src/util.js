@@ -67,7 +67,11 @@ function makePercentiles(countryDict) {
       var upper = percentile[2];
       if (!percentBounds.hasOwnProperty(lower)) {
         console.error(
-            'Lower percent bound of %s missing from percentBounds.', lower);
+            'Lower percent bound of %s missing from percentBounds, ' +
+              'with\n' +
+              'countryName = %s\n' +
+              'sizes = %o',
+            lower, countryName, sizes);
       }
       var upperBound = percentBounds[lower] + size;
       // Ensure data consistency if this one's already been handled.
