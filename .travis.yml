@@ -13,9 +13,13 @@ jobs:
       # if: branch = gh-pages
       language: python
       python: 3.8
-      script: python
-        src/data-wrangling/csv_to_json.py
-        src/data-wrangling/wid-income-data.csv > src/income-data.json
+      script:
+        - python
+          src/data-wrangling/csv_to_json.py
+          src/data-wrangling/wid-income-data.csv > src/income-data.json
+        - python
+          src/data-wrangling/csv_to_json.py
+          src/data-wrangling/wid-wealth-data.csv > src/wealth-data.json
       deploy:
         edge: true
         provider: pages:git
