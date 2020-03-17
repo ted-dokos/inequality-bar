@@ -23,12 +23,20 @@ var debug = true;
 var dataBase = {};
 
 // JSON data files are built by the deploy stage in .travis.yml.
-var dataPromise = fetch('src/income-data.json')
+var incomeDataPromise = fetch('src/income-data.json')
     .then(response => response.json())
     .then(function(data) {
-      if (debug) {
-        console.log(data);
-      }
+      return new Promise(resolve => {
+        let db = {};
+        Object.keys(data).forEach(
+            year => { db[year] = makePercentiles(data[year]); });
+        resolve(db);
+      });
+    });
+
+var wealthDataPromise = fetch('src/wealth-data.json')
+    .then(response => response.json())
+    .then(function(data) {
       return new Promise(resolve => {
         let db = {};
         Object.keys(data).forEach(
@@ -50,11 +58,11 @@ var yShift = chartSpec.chartHeight * 0.10;
 
 var chart;
 
-var inequalityType = 'Income';
+var inequalityType = 'Wealth';
 
 function toggle() {
   setYear(upNext)
-  display(upNext, inequalityType, dataBase[upNext], selectedCountries, chart,
+  display(inequalityType, upNext, dataBase, selectedCountries, chart,
           chartSpec);
   if (upNext === '2014') {
     upNext = '1980';
@@ -67,7 +75,7 @@ function setYear(y = undefined) {
   let year = y === undefined ? document.getElementById('foo').value : y;
   document.getElementById('foo').value = year;
   if (dataBase[year] != null) {
-    display(year, inequalityType, dataBase[year], selectedCountries, chart,
+    display(inequalityType, year, dataBase, selectedCountries, chart,
             chartSpec);
     let slider = document.getElementById('slider');
     slider.value = year;
@@ -75,7 +83,10 @@ function setYear(y = undefined) {
 }
 
 async function main() {
-  dataBase = await dataPromise;
+  let incomeDataBase = await incomeDataPromise;
+  let wealthDataBase = await wealthDataPromise;
+  dataBase = incomeDataBase;
+
   if (debug) {
     console.log(dataBase);
   }
@@ -89,7 +100,7 @@ async function main() {
       .attr('transform',
             'translate(0, ' + (chartSpec.barHeight + yShift).toString() + ')');
 
-  display('1980', inequalityType, dataBase['1980'], selectedCountries, chart,
+  display(inequalityType, '1980', dataBase, selectedCountries, chart,
           chartSpec);
 
   var yearBox = document.getElementById('foo');
@@ -98,7 +109,7 @@ async function main() {
   slider.value = '1980';
   slider.oninput = function() {
     yearBox.value = this.value;
-    display(this.value, inequalityType, dataBase[this.value], selectedCountries,
+    display(inequalityType, this.value, dataBase, selectedCountries,
             chart, chartSpec);
   };
 }

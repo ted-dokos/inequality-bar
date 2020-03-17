@@ -29,9 +29,12 @@ function percentBarEnterFn(enter, x, barHeight) {
   };
 
   let percentileColors = {
+    '0-50': 'lightgreen',
+    '50-90': 'darkgreen',
     '0-90': 'lightgreen',
     '90-99': '#5599dd',
     '99-99.9': 'darkorange',
+    '99-100': 'darkorange',
     '99.9-100': '#cc4444',
   };
 
@@ -125,12 +128,14 @@ function percentileDataKeyFn(pd) {
  * first element is a percentile string as described in the input to
  * getPercentilesForPercentBar.
  */
-function display(year,
-                 inequalityType,
-                 dataOneYear,
+function display(inequalityType,
+                 year,
+                 data,
                  selectedCountries,
                  chart,
                  chartSpec) {
+  let useInterpolation = true;
+  let dataOneYear = data[year];
   let x = d3.scaleLinear()
       .range([chartSpec.chartWidth * 0.02,
               chartSpec.chartWidth * 0.98])
