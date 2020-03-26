@@ -29,9 +29,12 @@ function percentBarEnterFn(enter, x, barHeight) {
   };
 
   let percentileColors = {
+    '0-50': 'lightgreen',
+    '50-90': 'darkgreen',
     '0-90': 'lightgreen',
     '90-99': '#5599dd',
     '99-99.9': 'darkorange',
+    '99-100': 'darkorange',
     '99.9-100': '#cc4444',
   };
 
@@ -121,16 +124,27 @@ function percentileDataKeyFn(pd) {
       .join('|');
 }
 /**
+ * @data is a database of inequality measurements for various countries, indexed
+ * by year. It is formatted as follows:
+ * {
+ *   type: The type of inequality measured (income or wealth),
+ *   year: Inequality data for the year in question, formatted as in the output
+ *         of makePercentiles,
+ *   ...
+ * },
+ * where the year field is repeated ('1900', '1901', etc).
  * @selectedCountries is a list of countries to display. It's expected that the
  * first element is a percentile string as described in the input to
  * getPercentilesForPercentBar.
  */
 function display(year,
-                 inequalityType,
-                 dataOneYear,
+                 data,
                  selectedCountries,
                  chart,
                  chartSpec) {
+  let useInterpolation = true;
+  let inequalityType = data['type'];
+  let dataOneYear = data[year];
   let x = d3.scaleLinear()
       .range([chartSpec.chartWidth * 0.02,
               chartSpec.chartWidth * 0.98])

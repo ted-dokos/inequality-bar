@@ -20,16 +20,28 @@ var selectedCountries = ['percentBar-0-90-99-99.9-100',
                          'Sweden',];
 var debug = true;
 
-var dataBase = {};
+// These are initialized in main().
+var incomeDataBase = null;
+var wealthDataBase = null;
+var dataBases = null;
 
-var dataPromise = fetch('src/data.json')
+// JSON data files are built by the deploy stage in .travis.yml.
+var incomeDataPromise = fetch('src/income-data.json')
     .then(response => response.json())
     .then(function(data) {
-      if (debug) {
-        console.log(data);
-      }
       return new Promise(resolve => {
-        let db = {};
+        let db = { type: 'Income' };
+        Object.keys(data).forEach(
+            year => { db[year] = makePercentiles(data[year]); });
+        resolve(db);
+      });
+    });
+
+var wealthDataPromise = fetch('src/wealth-data.json')
+    .then(response => response.json())
+    .then(function(data) {
+      return new Promise(resolve => {
+        let db = { type: 'Wealth' };
         Object.keys(data).forEach(
             year => { db[year] = makePercentiles(data[year]); });
         resolve(db);
@@ -49,12 +61,11 @@ var yShift = chartSpec.chartHeight * 0.10;
 
 var chart;
 
-var inequalityType = 'Income';
+var inequalityType = 'Wealth';
 
 function toggle() {
   setYear(upNext)
-  display(upNext, inequalityType, dataBase[upNext], selectedCountries, chart,
-          chartSpec);
+  display(upNext, dataBase, selectedCountries, chart, chartSpec);
   if (upNext === '2014') {
     upNext = '1980';
   } else {
@@ -66,15 +77,27 @@ function setYear(y = undefined) {
   let year = y === undefined ? document.getElementById('foo').value : y;
   document.getElementById('foo').value = year;
   if (dataBase[year] != null) {
-    display(year, inequalityType, dataBase[year], selectedCountries, chart,
-            chartSpec);
+    display(year, dataBase, selectedCountries, chart, chartSpec);
     let slider = document.getElementById('slider');
     slider.value = year;
   }
 }
 
+function toggleInequalityType() {
+  if (dataBase.type === 'Income') {
+    dataBase = wealthDataBase;
+  } else {
+    dataBase = incomeDataBase;
+  }
+  let year = document.getElementById('foo').value;
+  display(year, dataBase, selectedCountries, chart, chartSpec);
+}
+
 async function main() {
-  dataBase = await dataPromise;
+  incomeDataBase = await incomeDataPromise;
+  wealthDataBase = await wealthDataPromise;
+  dataBase = incomeDataBase;
+
   if (debug) {
     console.log(dataBase);
   }
@@ -88,8 +111,7 @@ async function main() {
       .attr('transform',
             'translate(0, ' + (chartSpec.barHeight + yShift).toString() + ')');
 
-  display('1980', inequalityType, dataBase['1980'], selectedCountries, chart,
-          chartSpec);
+  display('1980', dataBase, selectedCountries, chart, chartSpec);
 
   var yearBox = document.getElementById('foo');
   yearBox.value = '1980';
@@ -97,7 +119,6 @@ async function main() {
   slider.value = '1980';
   slider.oninput = function() {
     yearBox.value = this.value;
-    display(this.value, inequalityType, dataBase[this.value], selectedCountries,
-            chart, chartSpec);
+    display(this.value, dataBase, selectedCountries, chart, chartSpec);
   };
 }
