@@ -4,7 +4,7 @@
   },
   "dependencies": {
     "d3": "^5.15.0",
-    "jsdom": "^16.5.0"
+    "jsdom": "^16.7.0"
   },
   "devDependencies": {
     "jasmine": "^3.5.0"
